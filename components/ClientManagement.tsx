@@ -47,157 +47,185 @@ export const ClientManagement: React.FC<ClientManagementProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Search & Filtering Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-col lg:flex-row gap-4 justify-between items-center">
-        <div className="relative w-full lg:w-96">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-          <input
-            type="text"
-            placeholder="Search by client name, phone or email..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium text-slate-800"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
-          {isAdmin && (
-            <button
-              type="button"
-              onClick={() => onEditClient(null)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 shrink-0"
-            >
-              <Plus size={16} />
-              <span>Add New Client</span>
-            </button>
-          )}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex flex-col lg:flex-row gap-4 justify-between items-center">
+          <div className="relative w-full lg:w-96">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <input
+              type="text"
+              placeholder="Search by client name, phone or email..."
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium text-slate-800"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => onEditClient(null)}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 shrink-0"
+              >
+                <Plus size={16} />
+                <span>Add New Client</span>
+              </button>
+            )}
 
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200 shrink-0">
-            <Filter className="text-slate-400" size={16} />
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200 shrink-0">
+              <Filter className="text-slate-400" size={16} />
+              <select
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="All">All Booking Statuses</option>
+                <option value="Booked">Booked Work</option>
+                <option value="Lead">Lead</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
             <select
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shrink-0"
+              value={filterReligion}
+              onChange={(e) => setFilterReligion(e.target.value)}
             >
-              <option value="All">All Booking Statuses</option>
-              <option value="Booked">Booked Work</option>
-              <option value="Lead">Lead</option>
-              <option value="Completed">Completed</option>
+              <option value="All">All Traditions</option>
+              <option value="Hindu">Hindu</option>
+              <option value="Muslim">Muslim</option>
+              <option value="Christian">Christian</option>
+              <option value="Others">Others</option>
             </select>
           </div>
-
-          <select
-            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shrink-0"
-            value={filterReligion}
-            onChange={(e) => setFilterReligion(e.target.value)}
-          >
-            <option value="All">All Traditions</option>
-            <option value="Hindu">Hindu</option>
-            <option value="Muslim">Muslim</option>
-            <option value="Christian">Christian</option>
-            <option value="Others">Others</option>
-          </select>
         </div>
-      </div>
 
-      {/* 6-COLUMN CARDS GRID LAYOUT */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        {filtered.map((c) => {
-          const clientTasks = assignments.filter(a => a.clientId === c.id);
-          return (
-            <div
-              key={c.id}
-              className="bg-white rounded-3xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-indigo-300 transition-all p-4 flex flex-col justify-between space-y-3 group relative overflow-hidden"
-            >
-              <div className="space-y-2">
-                {/* Header Badge */}
-                <div className="flex items-center justify-between gap-1.5">
-                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${getReligionStyle(c.religion)}`}>
-                    {c.religion}
-                  </span>
-                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-black rounded-md">
-                    {c.status || 'Booked'}
-                  </span>
-                </div>
-
-                {/* Client Name */}
-                <div className="pt-1">
-                  <h4 
-                    onClick={() => onSelectClient(c.id)}
-                    className="font-extrabold text-slate-900 text-sm truncate hover:text-indigo-600 cursor-pointer transition-colors flex items-center gap-1"
-                  >
-                    <span className="truncate">{c.name}</span>
-                    <ExternalLink size={11} className="text-slate-400 shrink-0" />
-                  </h4>
-                  <p className="text-[10px] text-slate-500 truncate mt-0.5">{c.phone || c.email}</p>
-                </div>
-
-                {/* Confirmed Functions Pills */}
-                <div className="pt-1.5 border-t border-slate-200/60 space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Functions ({c.events?.length || 0}):</p>
-                  {c.events && c.events.length > 0 ? (
-                    <div className="space-y-1 max-h-20 overflow-y-auto pr-0.5">
-                      {c.events.map(ev => (
-                        <div key={ev.id} className="bg-slate-50 p-1.5 rounded-lg border border-slate-200/80 text-[10px] flex justify-between items-center">
-                          <span className="font-bold text-slate-800 truncate">{ev.type}</span>
-                          <span className="font-semibold text-indigo-600 shrink-0 ml-1">{ev.date}</span>
+        {/* CLIENT TABLE VIEW */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Client Profile</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Tradition</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Confirmed Functions</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Assigned Work</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
+                {isAdmin && <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.map((c) => {
+                const clientTasks = assignments.filter(a => a.clientId === c.id);
+                return (
+                  <tr key={c.id} className="hover:bg-slate-50/80 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => onSelectClient(c.id)}
+                          className="w-10 h-10 rounded-xl bg-indigo-100 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center font-bold text-indigo-700 shrink-0 shadow-2xs"
+                          title="Click to open dedicated client page"
+                        >
+                          {c.name.charAt(0)}
+                        </button>
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => onSelectClient(c.id)}
+                            className="font-extrabold text-slate-900 hover:text-indigo-600 transition-colors text-left flex items-center gap-1.5 text-xs sm:text-sm"
+                          >
+                            <span>{c.name}</span>
+                            <ExternalLink size={12} className="text-slate-400 group-hover:text-indigo-600" />
+                          </button>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="flex items-center gap-1 text-[10px] text-slate-500"><Mail size={10} /> {c.email}</span>
+                            <span className="flex items-center gap-1 text-[10px] text-slate-500"><Phone size={10} /> {c.phone}</span>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-[10px] text-slate-400 italic">No events logged</p>
-                  )}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${getReligionStyle(c.religion)}`}>
+                        {c.religion}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1.5 max-w-xs">
+                        {c.events && c.events.length > 0 ? (
+                          c.events.map(e => (
+                            <span key={e.id} className="px-2 py-0.5 bg-slate-100 text-slate-700 font-bold rounded-lg text-[10px] border border-slate-200">
+                              {e.type} ({e.date})
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-slate-400 italic">No events logged</span>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-full text-xs border border-indigo-100">
+                        {clientTasks.length} Task(s)
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span className="px-2.5 py-1 bg-green-100 text-green-700 font-bold rounded-full text-xs">
+                        {c.status || 'Booked'}
+                      </span>
+                    </td>
+
+                    {isAdmin && (
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button 
+                            type="button"
+                            onClick={() => onSelectClient(c.id)} 
+                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" 
+                            title="View Client Details"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => onEditClient(c)} 
+                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" 
+                            title="Edit Client Profile"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => onDeleteClient(c.id)} 
+                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                            title="Delete Client"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {filtered.length === 0 && (
+            <div className="py-16 px-6 text-center bg-slate-50/50">
+              <div className="max-w-md mx-auto space-y-3">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                  <Contact2 size={28} />
                 </div>
-              </div>
-
-              {/* Card Footer Actions */}
-              <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => onSelectClient(c.id)}
-                  className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[11px] rounded-xl transition-all flex items-center justify-center gap-1 shadow-2xs"
-                >
-                  <Contact2 size={12} />
-                  <span>CRM</span>
-                </button>
-
-                {isAdmin && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => onEditClient(c)}
-                      className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                      title="Edit Client"
-                    >
-                      <Edit2 size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDeleteClient(c.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete Client"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                )}
+                <h3 className="text-base font-bold text-slate-900">No Client Records Found</h3>
+                <p className="text-xs text-slate-500">Try adjusting your search query or filters.</p>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Empty State */}
-      {filtered.length === 0 && (
-        <div className="py-16 px-6 text-center bg-white rounded-3xl border border-dashed border-slate-200">
-          <div className="max-w-md mx-auto space-y-3">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
-              <Contact2 size={28} />
-            </div>
-            <h3 className="text-base font-bold text-slate-900">No Client Records Found</h3>
-            <p className="text-xs text-slate-500">Try clearing or adjusting your search filters.</p>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
