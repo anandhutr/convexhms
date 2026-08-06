@@ -566,7 +566,7 @@ const App: React.FC = () => {
         }}
       />
       
-      <main className="flex-1 ml-64 p-8 overflow-y-auto">
+      <main className="flex-1 ml-64 min-w-0 p-4 sm:p-6 lg:p-8 min-h-screen overflow-x-hidden">
         {/* Top Header Bar */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
