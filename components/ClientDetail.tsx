@@ -432,13 +432,15 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
 
           {/* Primary Action Buttons */}
           <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            <button
-              onClick={() => onAssignWork(client)}
-              className="flex-1 sm:flex-none items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20 text-xs flex"
-            >
-              <Plus size={16} />
-              Assign Work
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => onAssignWork(client)}
+                className="flex-1 sm:flex-none items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20 text-xs flex"
+              >
+                <Plus size={16} />
+                Assign Work
+              </button>
+            )}
 
             <button
               onClick={() => onGenerateBrief(client)}
@@ -665,17 +667,39 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
 
                 {/* Header Actions */}
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleSyncToGoogleCalendar(ev)}
-                    disabled={syncingCalendarEventId === ev.id}
-                    className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm border border-blue-400/30"
-                  >
-                    <Calendar size={14} />
-                    <span>
-                      {syncingCalendarEventId === ev.id ? 'Syncing...' : 'Block on Google Cal'}
-                    </span>
-                  </button>
+                  {isAdmin && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleSyncToGoogleCalendar(ev)}
+                        disabled={syncingCalendarEventId === ev.id}
+                        className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm border border-blue-400/30"
+                      >
+                        <Calendar size={14} />
+                        <span>
+                          {syncingCalendarEventId === ev.id ? 'Syncing...' : 'Block on Google Cal'}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openAddCrewModal(ev.id)}
+                        className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm"
+                      >
+                        <UserPlus size={14} />
+                        <span>Add Crew</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openAddHddModal(ev.id)}
+                        className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 border border-slate-700"
+                      >
+                        <HardDrive size={14} />
+                        <span>Add HDD</span>
+                      </button>
+                    </>
+                  )}
 
                   {calendarSyncResults[ev.id]?.htmlLink && (
                     <a
@@ -689,22 +713,6 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                     </a>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => openAddCrewModal(ev.id)}
-                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm"
-                  >
-                    <UserPlus size={14} />
-                    <span>Add Crew</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openAddHddModal(ev.id)}
-                    className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 border border-slate-700"
-                  >
-                    <HardDrive size={14} />
-                    <span>Add HDD Path</span>
-                  </button>
                   <button
                     type="button"
                     onClick={() => onAssignWork(client, ev.id)}
@@ -782,24 +790,26 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => openAddCrewModal(ev.id, member)}
-                              className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                              title="Edit Crew Member"
-                            >
-                              <Edit2 size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteCrewMember(ev.id, member.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Remove Crew Member"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
+                          {isAdmin && (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => openAddCrewModal(ev.id, member)}
+                                className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                title="Edit Crew Member"
+                              >
+                                <Edit2 size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCrewMember(ev.id, member.id)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Remove Crew Member"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -807,13 +817,15 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                     <div className="p-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400 text-xs flex flex-col items-center gap-1.5">
                       <Users size={20} className="text-slate-300" />
                       <span>No photographers or videographers assigned yet.</span>
-                      <button 
-                        type="button"
-                        onClick={() => openAddCrewModal(ev.id)} 
-                        className="text-indigo-600 font-bold hover:underline mt-1"
-                      >
-                        + Assign Bride/Groom Crew
-                      </button>
+                      {isAdmin && (
+                        <button 
+                          type="button"
+                          onClick={() => openAddCrewModal(ev.id)} 
+                          className="text-indigo-600 font-bold hover:underline mt-1"
+                        >
+                          + Assign Bride/Groom Crew
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -852,22 +864,24 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                               )}
                             </div>
 
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => openAddHddModal(ev.id, hdd)}
-                                className="p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors"
-                              >
-                                <Edit2 size={13} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteHdd(ev.id, hdd.id)}
-                                className="p-1 text-slate-400 hover:text-red-600 rounded transition-colors"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
+                            {isAdmin && (
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => openAddHddModal(ev.id, hdd)}
+                                  className="p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors"
+                                >
+                                  <Edit2 size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteHdd(ev.id, hdd.id)}
+                                  className="p-1 text-slate-400 hover:text-red-600 rounded transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           {/* Path Bar */}
@@ -935,14 +949,16 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               <option value="Done">Done</option>
             </select>
 
-            <button
-              type="button"
-              onClick={() => onAssignWork(client)}
-              className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-1 shadow-sm"
-            >
-              <Plus size={14} />
-              New Task
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => onAssignWork(client)}
+                className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-1 shadow-sm"
+              >
+                <Plus size={14} />
+                New Task
+              </button>
+            )}
           </div>
         </div>
 
@@ -953,10 +969,10 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase text-slate-500 tracking-wider">
                   <th className="py-3 px-3 w-8 text-center"></th>
                   <th className="py-3 px-4">Task & Priority</th>
-                  <th className="py-3 px-4">Assignee (Quick Change)</th>
+                  <th className="py-3 px-4">Assignee</th>
                   <th className="py-3 px-4">Due Date</th>
                   <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  {isAdmin && <th className="py-3 px-4 text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
@@ -1014,22 +1030,25 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                                 <User size={12} className="text-slate-400" />
                               )}
                             </div>
-                            <select
-                              value={task.assigneeId}
-                              disabled={!isAdmin}
-                              onChange={(e) => {
-                                const updatedTask = { ...task, assigneeId: e.target.value };
-                                saveAssignmentToFirestore(updatedTask);
-                              }}
-                              className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer max-w-[120px] truncate"
-                              title="Quick change assignee"
-                            >
-                              {employees.map(emp => (
-                                <option key={emp.id} value={emp.id}>
-                                  {emp.name} ({emp.role})
-                                </option>
-                              ))}
-                            </select>
+                            {isAdmin ? (
+                              <select
+                                value={task.assigneeId}
+                                onChange={(e) => {
+                                  const updatedTask = { ...task, assigneeId: e.target.value };
+                                  saveAssignmentToFirestore(updatedTask);
+                                }}
+                                className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer max-w-[120px] truncate"
+                                title="Quick change assignee"
+                              >
+                                {employees.map(emp => (
+                                  <option key={emp.id} value={emp.id}>
+                                    {emp.name} ({emp.role})
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span className="text-xs font-bold text-slate-800 truncate">{assignee?.name || 'Unassigned'}</span>
+                            )}
                           </div>
                         </td>
 
@@ -1043,39 +1062,45 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                         <td className="py-3 px-3 whitespace-nowrap">
                           <div className="flex items-center gap-1">
                             {statusIcons[task.status]}
-                            <select
-                              value={task.status}
-                              onChange={(e) => onUpdateAssignmentStatus(task.id, e.target.value as AssignmentStatus)}
-                              className="bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                            >
-                              <option value="To Do">To Do</option>
-                              <option value="In Progress">In Progress</option>
-                              <option value="Review">Review</option>
-                              <option value="Done">Done</option>
-                            </select>
+                            {isAdmin ? (
+                              <select
+                                value={task.status}
+                                onChange={(e) => onUpdateAssignmentStatus(task.id, e.target.value as AssignmentStatus)}
+                                className="bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                              >
+                                <option value="To Do">To Do</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Review">Review</option>
+                                <option value="Done">Done</option>
+                              </select>
+                            ) : (
+                              <span className="text-xs font-bold text-slate-700">{task.status}</span>
+                            )}
                           </div>
                         </td>
 
-                        <td className="py-3 px-4 whitespace-nowrap text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              type="button"
-                              onClick={() => onEditAssignment(task)}
-                              className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                              title="Edit Task"
-                            >
-                              <Edit2 size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => onDeleteAssignment(task.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete Task"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
+                        {isAdmin && (
+                          <td className="py-3 px-4 whitespace-nowrap text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => onEditAssignment(task)}
+                                className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                title="Edit Task"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onDeleteAssignment(task.id)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete Task"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
 
                       {isExpanded && (
