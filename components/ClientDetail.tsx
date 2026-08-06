@@ -637,87 +637,93 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
 
           return (
             <div key={ev.id} className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden space-y-0">
-              {/* Event Header Banner */}
-              <div className="p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2.5 py-0.5 bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 font-black text-[10px] uppercase rounded-full tracking-wider">
-                      {ev.type} Ceremony
-                    </span>
-                    <span className={`px-2.5 py-0.5 font-black text-[10px] uppercase rounded-full border ${
-                      ev.sideType === 'Both' 
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/40' 
-                        : 'bg-blue-500/20 text-blue-300 border-blue-400/40'
-                    }`}>
-                      {ev.sideType === 'Both' ? '👑 Both Sides (Bride & Groom)' : '👤 Single Side Work'}
-                    </span>
+              {/* Intuitive Redesigned Function Ceremony Header */}
+              <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col justify-between gap-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-2.5 py-0.5 bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 font-black text-[10px] uppercase rounded-full tracking-wider">
+                        {ev.type} Ceremony
+                      </span>
+                      <span className={`px-2.5 py-0.5 font-black text-[10px] uppercase rounded-full border ${
+                        ev.sideType === 'Both' 
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-400/40' 
+                          : 'bg-blue-500/20 text-blue-300 border-blue-400/40'
+                      }`}>
+                        {ev.sideType === 'Both' ? '👑 Both Sides' : '👤 Single Side'}
+                      </span>
+                    </div>
+                    <h3 className="text-base font-black text-white">{ev.type}</h3>
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-300 font-medium">
+                      <span className="flex items-center gap-1"><Calendar size={12} className="text-indigo-400 shrink-0" /> {ev.date || 'Date TBD'} {ev.time ? `@ ${ev.time}` : ''}</span>
+                      <span className="flex items-center gap-1"><MapPin size={12} className="text-indigo-400 shrink-0" /> {ev.venue || 'Venue TBD'}</span>
+                    </div>
+                    {ev.notes && (
+                      <p className="text-[11px] text-slate-400 italic pt-0.5">"{ev.notes}"</p>
+                    )}
                   </div>
-                  <h3 className="text-lg font-black text-white">{ev.type} — {client.name}</h3>
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300">
-                    <span className="flex items-center gap-1.5"><Calendar size={13} className="text-indigo-400" /> {ev.date || 'Date TBD'}</span>
-                    <span className="flex items-center gap-1.5"><MapPin size={13} className="text-indigo-400" /> {ev.venue || 'Venue TBD'}</span>
-                  </div>
-                  {ev.notes && (
-                    <p className="text-xs text-slate-400 italic pt-1">"{ev.notes}"</p>
+
+                  {/* Google Calendar Quick Sync */}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => handleSyncToGoogleCalendar(ev)}
+                      disabled={syncingCalendarEventId === ev.id}
+                      title="Sync ceremony with Google Calendar"
+                      className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] rounded-xl transition-all flex items-center gap-1 border border-white/20 shrink-0"
+                    >
+                      <Calendar size={13} className="text-indigo-300" />
+                      <span>{syncingCalendarEventId === ev.id ? 'Syncing...' : 'Google Cal'}</span>
+                    </button>
                   )}
                 </div>
 
-                {/* Header Actions */}
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  {isAdmin && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => handleSyncToGoogleCalendar(ev)}
-                        disabled={syncingCalendarEventId === ev.id}
-                        className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm border border-blue-400/30"
-                      >
-                        <Calendar size={14} />
-                        <span>
-                          {syncingCalendarEventId === ev.id ? 'Syncing...' : 'Block on Google Cal'}
-                        </span>
-                      </button>
+                {/* Intuitive Action Ribbon (Crew, HDD, Tasks) */}
+                <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {isAdmin && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => openAddCrewModal(ev.id)}
+                          className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs"
+                        >
+                          <UserPlus size={13} />
+                          <span>+ Crew ({totalCrewCount})</span>
+                        </button>
 
-                      <button
-                        type="button"
-                        onClick={() => openAddCrewModal(ev.id)}
-                        className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm"
-                      >
-                        <UserPlus size={14} />
-                        <span>Add Crew</span>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => openAddHddModal(ev.id)}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs"
+                        >
+                          <HardDrive size={13} />
+                          <span>+ HDD ({totalHddCount})</span>
+                        </button>
+                      </>
+                    )}
 
-                      <button
-                        type="button"
-                        onClick={() => openAddHddModal(ev.id)}
-                        className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 border border-slate-700"
-                      >
-                        <HardDrive size={14} />
-                        <span>Add HDD</span>
-                      </button>
-                    </>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => onAssignWork(client, ev.id)}
+                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs"
+                    >
+                      <Plus size={13} />
+                      <span>+ Task ({eventTasks.length})</span>
+                    </button>
+                  </div>
 
                   {calendarSyncResults[ev.id]?.htmlLink && (
                     <a
                       href={calendarSyncResults[ev.id].htmlLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 hover:bg-emerald-500/30 font-bold text-[11px] rounded-xl flex items-center gap-1 transition-all"
+                      className="text-[11px] font-bold text-emerald-300 hover:text-emerald-200 underline flex items-center gap-0.5"
                     >
-                      <span>Open in Calendar</span>
-                      <ExternalLink size={12} />
+                      <span>Open Cal</span>
+                      <ExternalLink size={10} />
                     </a>
                   )}
-
-                  <button
-                    type="button"
-                    onClick={() => onAssignWork(client, ev.id)}
-                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm"
-                  >
-                    <Plus size={14} />
-                    <span>Assign Task</span>
-                  </button>
                 </div>
               </div>
 
