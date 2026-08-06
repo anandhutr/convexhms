@@ -29,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'clients', label: 'Clients', icon: Contact2 },
     { id: 'assignments', label: 'Work Tracking', icon: ClipboardList },
     { id: 'calendar', label: 'Calendar Tracker', icon: Calendar },
+    { id: 'payroll', label: 'Crew Payout History', icon: Receipt, adminOnly: true },
     { id: 'expenses', label: 'Work Expenses', icon: Receipt, adminOnly: true },
     { id: 'leaves', label: 'Leave Management', icon: Calendar },
     { id: 'directory', label: 'Employee Management', icon: Users, adminOnly: true },

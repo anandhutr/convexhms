@@ -48,6 +48,7 @@ export const ExpenseTracker: React.FC<ExpenseTrackerProps> = ({
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>('');
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
   const [expenseNotes, setExpenseNotes] = useState('');
+  const [paidToPerson, setPaidToPerson] = useState('');
 
   const currentEmp = employees.find(e => e.id === currentRoleId);
   const isAdmin = currentRoleId === 'admin' || currentEmp?.accessLevel === 'admin';
@@ -56,6 +57,7 @@ export const ExpenseTracker: React.FC<ExpenseTrackerProps> = ({
     setExpenseTitle('');
     setExpenseAmount('');
     setExpenseCategory('Travel');
+    setPaidToPerson('');
     
     const prefilledClient = clientId || (clients[0]?.id || '');
     setSelectedClientId(prefilledClient);
@@ -78,6 +80,7 @@ export const ExpenseTracker: React.FC<ExpenseTrackerProps> = ({
 
     const linkedClient = clients.find(c => c.id === selectedClientId);
     const linkedAssignment = assignments.find(a => a.id === selectedAssignmentId);
+    const matchedEmp = employees.find(emp => emp.name.toLowerCase() === paidToPerson.trim().toLowerCase());
 
     const newExpense: TaskExpense = {
       id: 'exp_' + Date.now(),
@@ -91,6 +94,8 @@ export const ExpenseTracker: React.FC<ExpenseTrackerProps> = ({
       date: expenseDate || new Date().toISOString().split('T')[0],
       addedBy: currentRoleId,
       addedByName: currentEmp ? currentEmp.name : 'Admin',
+      paidTo: paidToPerson.trim() || undefined,
+      paidToEmployeeId: matchedEmp?.id,
       notes: expenseNotes.trim(),
       status: isAdmin ? 'Approved' : 'Pending'
     };
@@ -387,8 +392,13 @@ export const ExpenseTracker: React.FC<ExpenseTrackerProps> = ({
                                       {catObj.icon} {exp.category}
                                     </span>
                                   </div>
-                                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-                                    {exp.assignmentTitle || 'General Work'} • {new Date(exp.date).toLocaleDateString()}
+                                  <p className="text-[10px] text-slate-500 font-medium mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                    <span>{exp.assignmentTitle || 'General Work'} • {new Date(exp.date).toLocaleDateString()}</span>
+                                    {exp.paidTo && (
+                                      <span className="font-extrabold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[9px]">
+                                        👤 Paid To: {exp.paidTo}
+                                      </span>
+                                    )}
                                   </p>
                                 </div>
                                 <div className="text-right shrink-0">
@@ -643,14 +653,33 @@ export const ExpenseTracker: React.FC<ExpenseTrackerProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Expense Date</label>
-                <input
-                  type="date"
-                  value={expenseDate}
-                  onChange={(e) => setExpenseDate(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Paid To (Recipient / Crew / Vendor)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Arjun Mehta / Catering / CRE"
+                    value={paidToPerson}
+                    onChange={(e) => setPaidToPerson(e.target.value)}
+                    list="crew-recipients-list"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                  />
+                  <datalist id="crew-recipients-list">
+                    {employees.map(emp => (
+                      <option key={emp.id} value={emp.name}>{emp.name} ({emp.role})</option>
+                    ))}
+                  </datalist>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Date Logged</label>
+                  <input
+                    type="date"
+                    value={expenseDate}
+                    onChange={(e) => setExpenseDate(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none"
+                  />
+                </div>
               </div>
 
               <div className="space-y-1">

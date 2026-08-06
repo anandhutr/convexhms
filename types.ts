@@ -54,6 +54,8 @@ export interface Assignment {
   createdBy?: string; // Employee ID or 'admin'
   clientId?: string;
   eventId?: string;
+  payoutAmount?: number; // Salary/Payout given for this completed work assignment
+  payoutPaidDate?: string;
   subtasks?: SubTask[];
   comments?: TaskComment[];
 }
@@ -72,6 +74,8 @@ export interface TaskExpense {
   date: string;
   addedBy: string; // Employee ID or 'admin'
   addedByName?: string;
+  paidTo?: string; // Recipient Name (Crew member, editor, vendor, or CRE)
+  paidToEmployeeId?: string; // Linked employee ID if applicable
   notes?: string;
   status?: 'Approved' | 'Pending';
 }

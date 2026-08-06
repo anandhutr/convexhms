@@ -22,6 +22,7 @@ import { generateEventCreativeBrief } from './services/geminiService';
 import ExpenseTracker from './components/ExpenseTracker';
 import NotificationCenter from './components/NotificationCenter';
 import DailyCalendarTracker from './components/DailyCalendarTracker';
+import MonthlyPayrollHistory from './components/MonthlyPayrollHistory';
 import { 
   testFirestoreConnection,
   seedInitialFirestoreData,
@@ -830,6 +831,16 @@ const App: React.FC = () => {
               employees={employees}
               onSelectClient={handleSelectClient}
               onNewTask={handleOpenAssignmentModal}
+            />
+          )}
+
+          {state.view === 'payroll' && (
+            <MonthlyPayrollHistory 
+              employees={employees}
+              assignments={assignments}
+              expenses={expenses}
+              clients={clients}
+              isAdmin={isCurrentAdmin}
             />
           )}
 
