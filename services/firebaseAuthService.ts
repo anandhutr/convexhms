@@ -19,7 +19,12 @@ export const signInWithGoogle = async (): Promise<{ user: User | null; error?: s
     return { user: result.user };
   } catch (err: any) {
     console.error('Google Sign In Error:', err);
-    return { user: null, error: err?.message || 'Google sign-in failed' };
+    let msg = err?.message || 'Google sign-in failed';
+    if (err?.code === 'auth/unauthorized-domain') {
+      const currentDomain = typeof window !== 'undefined' ? window.location.hostname : 'your Vercel domain';
+      msg = `Firebase Auth Error: Domain "${currentDomain}" is not authorized. Please add "${currentDomain}" to your Firebase Console under Authentication -> Settings -> Authorized Domains.`;
+    }
+    return { user: null, error: msg };
   }
 };
 
