@@ -17,7 +17,7 @@ import EmployeeDetailModal from './components/EmployeeDetailModal';
 import LeaveManagement from './components/LeaveManagement';
 import { GoogleCalendarButton } from './components/GoogleCalendarButton';
 import { getDueTasks } from './components/DueNotificationsBanner';
-import { Plus, Search as SearchIcon, X, Sparkles, RefreshCw, UserCheck, LogOut, KeyRound } from 'lucide-react';
+import { Plus, Search as SearchIcon, X, Sparkles, RefreshCw, UserCheck, LogOut, KeyRound, Sun, Moon, Menu } from 'lucide-react';
 import { generateEventCreativeBrief } from './services/geminiService';
 import ExpenseTracker from './components/ExpenseTracker';
 import NotificationCenter from './components/NotificationCenter';
@@ -136,6 +136,23 @@ const App: React.FC = () => {
   // Leave Management State
   const [leaveRequests, setLeaveRequests] = useState<import('./types').LeaveRequest[]>([]);
   const [leavePolicy, setLeavePolicy] = useState<import('./types').LeavePolicyConfig>(DEFAULT_LEAVE_POLICY);
+
+  // Theme & Mobile Responsiveness State
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('convex_theme') as 'light' | 'dark') || 'light';
+  });
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('convex_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   // Expenses & System Notifications State
   const [expenses, setExpenses] = useState<import('./types').TaskExpense[]>([]);
@@ -566,10 +583,44 @@ const App: React.FC = () => {
   const activeClientObject = clients.find(c => c.id === selectedClientId);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row relative transition-colors duration-200">
+      {/* Mobile Top Navigation Bar */}
+      <header className="lg:hidden bg-slate-900 dark:bg-slate-950 text-white p-4 flex items-center justify-between border-b border-slate-800 sticky top-0 z-30 shadow-md">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsMobileNavOpen(true)}
+            className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+          >
+            <Menu size={22} />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-sm">
+              C
+            </div>
+            <span className="font-black text-sm tracking-wider">CONVEX</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          >
+            {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-indigo-300" />}
+          </button>
+          <NotificationCenter 
+            notifications={systemNotifications}
+            isAdmin={isCurrentAdmin}
+            onApproveRequest={() => {}}
+            onRejectRequest={() => {}}
+          />
+        </div>
+      </header>
+
       <Sidebar 
         currentView={state.view} 
-        onNavigate={handleSetView} 
+        onNavigate={(v) => { handleSetView(v); setIsMobileNavOpen(false); }} 
         currentRoleId={currentRoleId}
         employees={employees}
         onLogout={handleLogout}
@@ -579,23 +630,35 @@ const App: React.FC = () => {
             handleOpenEmployeeModal(currentLoggedInEmp);
           }
         }}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        isMobileOpen={isMobileNavOpen}
+        onCloseMobileMenu={() => setIsMobileNavOpen(false)}
       />
       
-      <main className="flex-1 ml-64 min-w-0 p-4 sm:p-6 lg:p-8 min-h-screen overflow-x-hidden">
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between mb-8">
+      <main className="flex-1 lg:ml-64 ml-0 min-w-0 p-3 sm:p-6 lg:p-8 min-h-screen overflow-x-hidden">
+        {/* Desktop Top Header Bar */}
+        <div className="hidden lg:flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
                 placeholder="Search studio resources..." 
-                className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm text-slate-900 dark:text-slate-100"
               />
             </div>
             <GoogleCalendarButton />
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition-colors shadow-2xs flex items-center gap-2 text-xs font-bold"
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            >
+              {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-indigo-500" />}
+              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
             {/* Real-time Admin Notification Center Bell */}
             <NotificationCenter 
               notifications={systemNotifications}

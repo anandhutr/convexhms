@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, BrainCircuit, ClipboardList, Contact2, LogOut, UserCheck, Calendar, Receipt } from 'lucide-react';
+import { LayoutDashboard, Users, BrainCircuit, ClipboardList, Contact2, LogOut, UserCheck, Calendar, Receipt, Sun, Moon, X } from 'lucide-react';
 import { Employee } from '../types';
 
 interface SidebarProps {
@@ -10,6 +10,10 @@ interface SidebarProps {
   onSwitchProfile?: () => void;
   onLogout?: () => void;
   onEditMyProfile?: () => void;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobileMenu?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -19,7 +23,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentRoleId = 'admin', 
   onSwitchProfile,
   onLogout,
-  onEditMyProfile
+  onEditMyProfile,
+  theme = 'light',
+  onToggleTheme,
+  isMobileOpen = false,
+  onCloseMobileMenu
 }) => {
   const currentEmployee = currentRoleId !== 'admin' ? employees.find(e => e.id === currentRoleId) : null;
   const isAdmin = currentRoleId === 'admin' || currentEmployee?.accessLevel === 'admin';
@@ -37,17 +45,51 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800 shrink-0 z-30">
-      {/* Brand Header */}
-      <div className="p-6 flex items-center gap-3 border-b border-slate-800">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-indigo-700 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 font-black text-base">
-          C
+    <>
+      {/* Mobile Drawer Overlay Backdrop */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 lg:hidden"
+          onClick={onCloseMobileMenu}
+        />
+      )}
+
+      <aside className={`w-64 bg-slate-900 dark:bg-slate-950 text-slate-300 flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800 shrink-0 z-50 transition-transform duration-300 ${
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
+        {/* Brand Header & Mobile Close */}
+        <div className="p-5 flex items-center justify-between border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-indigo-700 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 font-black text-base">
+              C
+            </div>
+            <div>
+              <h1 className="font-black text-sm text-white tracking-wide uppercase">CONVEX</h1>
+              <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Studio Operations</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1">
+            {onToggleTheme && (
+              <button
+                onClick={onToggleTheme}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+                title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              >
+                {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-indigo-300" />}
+              </button>
+            )}
+
+            {onCloseMobileMenu && (
+              <button 
+                onClick={onCloseMobileMenu}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors lg:hidden"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
         </div>
-        <div>
-          <h1 className="font-black text-sm text-white tracking-wide uppercase">CONVEX</h1>
-          <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Studio Operations Platform</p>
-        </div>
-      </div>
 
       {/* Navigation Menu */}
       <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
@@ -133,6 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
     </aside>
+    </>
   );
 };
 
