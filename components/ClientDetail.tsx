@@ -281,24 +281,29 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
     });
   };
 
-  // Filter assignments for this client
+  // Safe fallbacks
+  const eventsList = client.events || [];
   const clientAssignments = assignments.filter(a => a.clientId === client.id);
   const filteredAssignments = clientAssignments.filter(a => taskFilter === 'All' || a.status === taskFilter);
 
   const getAssignee = (id: string) => employees.find(e => e.id === id);
 
-  const religionStyles: Record<Religion, string> = {
+  const religionStyles: Record<string, string> = {
     Hindu: 'bg-amber-50 text-amber-700 border-amber-200',
     Muslim: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     Christian: 'bg-blue-50 text-blue-700 border-blue-200',
     Others: 'bg-slate-50 text-slate-700 border-slate-200',
   };
 
-  const statusColors = {
+  const getReligionStyle = (rel?: string) => religionStyles[rel || 'Others'] || 'bg-slate-50 text-slate-700 border-slate-200';
+
+  const statusColors: Record<string, string> = {
     Booked: 'bg-indigo-100 text-indigo-700 border-indigo-200',
     Lead: 'bg-amber-100 text-amber-700 border-amber-200',
     Completed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   };
+
+  const getStatusColor = (st?: string) => statusColors[st || 'Booked'] || 'bg-indigo-100 text-indigo-700 border-indigo-200';
 
   const priorityColors = {
     Low: 'bg-slate-100 text-slate-600',
@@ -374,11 +379,11 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1.5">
                 <h1 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">{client.name}</h1>
-                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${statusColors[client.status]}`}>
-                  {client.status} Work
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${getStatusColor(client.status)}`}>
+                  {client.status || 'Booked'} Work
                 </span>
-                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${religionStyles[client.religion]}`}>
-                  {client.religion} Tradition
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${getReligionStyle(client.religion)}`}>
+                  {client.religion || 'Others'} Tradition
                 </span>
                 <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${
                   client.workScope === 'Single' 
@@ -400,7 +405,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Calendar size={14} className="text-indigo-500 shrink-0" />
-                  <span>{client.events.length} Function{client.events.length !== 1 ? 's' : ''}</span>
+                  <span>{eventsList.length} Function{eventsList.length !== 1 ? 's' : ''}</span>
                 </div>
 
                 {client.brideInstagram && (
