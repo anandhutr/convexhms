@@ -1572,7 +1572,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               </tr>
             </thead>
             <tbody>
-              {clientTasks.map(task => {
+              {clientAssignments.map(task => {
                 const assignee = employees.find(e => e.id === task.assigneeId);
                 return (
                   <tr key={task.id} className="border-b border-slate-200">
