@@ -1,0 +1,8 @@
+{
+  "name": "Convex HR - Employee Management System",
+  "description": "A professional, AI-powered employee management system for Convex Entertainments Pvt Ltd, featuring performance analytics, interactive dashboards, and Gemini-driven employee insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
