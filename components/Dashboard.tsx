@@ -768,64 +768,70 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <p className="text-[11px] text-slate-400">All assigned tasks in this view are completed!</p>
                   </div>
                 ) : (
-                  <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                  <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
                     {filteredDueItems.map(({ task, isOverdue, isDueToday, daysDiff, client, assignee }) => (
                       <div 
                         key={task.id}
-                        className={`p-4 rounded-2xl border shadow-sm transition-all space-y-2.5 ${
+                        className={`p-3.5 rounded-2xl border shadow-2xs transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
                           isOverdue 
-                            ? 'border-red-200 bg-red-50/30' 
+                            ? 'border-red-200 bg-red-50/40' 
                             : isDueToday 
-                            ? 'border-amber-200 bg-amber-50/30' 
-                            : 'border-slate-200 bg-slate-50/30 hover:bg-white hover:shadow-md hover:border-indigo-200'
+                            ? 'border-amber-200 bg-amber-50/40' 
+                            : 'border-slate-200/80 bg-white hover:border-indigo-200 shadow-2xs'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                            isOverdue 
-                              ? 'bg-red-100 text-red-700' 
-                              : isDueToday 
-                              ? 'bg-amber-100 text-amber-800' 
-                              : 'bg-indigo-100 text-indigo-700'
-                          }`}>
-                            {isOverdue ? `Overdue by ${Math.abs(daysDiff)}d` : isDueToday ? 'Due Today' : `Due in ${daysDiff}d`}
-                          </span>
+                        {/* Work Title & Client Tag */}
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                              isOverdue 
+                                ? 'bg-red-500 text-white' 
+                                : isDueToday 
+                                ? 'bg-amber-500 text-white' 
+                                : 'bg-indigo-600 text-white'
+                            }`}>
+                              {isOverdue ? `Overdue (${Math.abs(daysDiff)}d)` : isDueToday ? 'Due Today' : `Due in ${daysDiff}d`}
+                            </span>
+
+                            {client && (
+                              <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 truncate max-w-[130px]">
+                                👤 {client.name}
+                              </span>
+                            )}
+                          </div>
+
+                          <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">
+                            {task.title}
+                          </h4>
+                        </div>
+
+                        {/* Pending With Assignee */}
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1 text-xs">
+                            <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0 font-bold text-[10px]">
+                              {assignee?.profilePicture ? (
+                                <img src={assignee.profilePicture} className="w-full h-full object-cover" alt={assignee.name} />
+                              ) : (
+                                <span>{assignee?.name.charAt(0) || '?'}</span>
+                              )}
+                            </div>
+                            <div>
+                              <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-tight">Pending With</span>
+                              <span className="text-xs font-black text-slate-800 block truncate max-w-[110px] leading-tight">
+                                {assignee?.name || 'Unassigned'}
+                              </span>
+                            </div>
+                          </div>
 
                           {onDismissNotification && (
                             <button
+                              type="button"
                               onClick={() => onDismissNotification(task.id)}
-                              className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition-colors"
+                              className="p-1 text-slate-300 hover:text-slate-600 rounded-lg transition-colors"
                               title="Dismiss notification"
                             >
-                              <X size={12} />
+                              <X size={14} />
                             </button>
-                          )}
-                        </div>
-
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-xs leading-snug">{task.title}</h4>
-                          <p className="text-[11px] text-slate-500 line-clamp-1">{task.description}</p>
-                        </div>
-
-                        <TaskProgressBar task={task} onToggleSubtask={onToggleSubtask} />
-
-                        <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase">Crew:</span>
-                            <span className="font-bold text-slate-800">{assignee?.name || 'Unassigned'}</span>
-                          </div>
-
-                          {onUpdateStatus && (
-                            <select
-                              value={task.status}
-                              onChange={(e) => onUpdateStatus(task.id, e.target.value as AssignmentStatus)}
-                              className="bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 px-2 py-0.5 outline-none focus:ring-2 focus:ring-indigo-500/20"
-                            >
-                              <option value="To Do">To Do</option>
-                              <option value="In Progress">In Progress</option>
-                              <option value="Review">Review</option>
-                              <option value="Done">Mark Done</option>
-                            </select>
                           )}
                         </div>
                       </div>
