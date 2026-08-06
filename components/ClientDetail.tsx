@@ -493,32 +493,32 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
 
         {/* Financial & Payment Compact Dashboard Card - ADMIN ONLY */}
         {isAdmin ? (
-          <div className="mt-5 p-4 bg-slate-900 text-white dark:bg-slate-900 dark:border-slate-800 rounded-2xl border border-slate-800 shadow-2xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 mb-3">
+          <div className="mt-5 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 mb-3">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-slate-800 text-indigo-300 rounded-lg border border-slate-700">
+                <div className="p-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-900">
                   <FileText size={16} />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-white">Payment & Commercial Breakdown</h3>
-                  <p className="text-[10px] text-slate-400 font-medium">Package pricing, advance collected, & pending balance</p>
+                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Payment & Commercial Breakdown</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Package pricing, advance collected, & pending balance</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
                 <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg border tracking-wider ${
                   packageAmt > 0 && balanceAmt <= 0
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                     : advancePaid > 0
-                    ? 'bg-blue-500/20 text-blue-300 border-blue-400/40'
-                    : 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
+                    : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
                 }`}>
                   {packageAmt > 0 && balanceAmt <= 0 ? '✓ Paid In Full' : advancePaid > 0 ? 'Partial Advance Paid' : 'Pending Advance'}
                 </span>
                 <button 
                   type="button" 
                   onClick={() => onEditClient(client)}
-                  className="text-[11px] text-indigo-300 hover:text-white font-bold underline ml-1"
+                  className="text-[11px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold underline ml-1"
                 >
                   Update Payments
                 </button>
@@ -535,42 +535,46 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                 return (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Total Package Revenue</span>
-                        <p className="text-base font-black text-white mt-0.5">₹{packageAmt.toLocaleString()}</p>
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl">
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Package Revenue</span>
+                        <p className="text-base font-black text-slate-900 dark:text-white mt-0.5">₹{packageAmt.toLocaleString()}</p>
                       </div>
 
-                      <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                        <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Advance Collected</span>
-                        <p className="text-base font-black text-emerald-400 mt-0.5">₹{advancePaid.toLocaleString()}</p>
+                      <div className="p-2.5 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-xl">
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">Advance Collected</span>
+                        <p className="text-base font-black text-emerald-700 dark:text-emerald-400 mt-0.5">₹{advancePaid.toLocaleString()}</p>
                       </div>
 
-                      <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                        <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Work Expenses</span>
-                        <p className="text-base font-black text-amber-400 mt-0.5">₹{totalExpenses.toLocaleString()}</p>
-                        <span className="text-[9px] text-amber-200/80 font-medium block">{clientExpenses.length} expense log(s)</span>
+                      <div className="p-2.5 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl">
+                        <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">Work Expenses</span>
+                        <p className="text-base font-black text-amber-700 dark:text-amber-400 mt-0.5">₹{totalExpenses.toLocaleString()}</p>
+                        <span className="text-[9px] text-amber-700/80 dark:text-amber-300/80 font-medium block">{clientExpenses.length} expense log(s)</span>
                       </div>
 
-                      <div className="p-2.5 bg-indigo-500/10 border border-indigo-400/20 rounded-xl">
-                        <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Work Net Profit</span>
-                        <p className="text-base font-black text-indigo-200 mt-0.5">₹{netProfit.toLocaleString()}</p>
-                        <span className="text-[9px] text-indigo-300/80 font-bold block">{margin}% Net Margin</span>
+                      <div className="p-2.5 bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/40 rounded-xl">
+                        <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider">Work Net Profit</span>
+                        <p className="text-base font-black text-indigo-700 dark:text-indigo-300 mt-0.5">₹{netProfit.toLocaleString()}</p>
+                        <span className="text-[9px] text-indigo-700/80 dark:text-indigo-300/80 font-bold block">{margin}% Net Margin</span>
                       </div>
 
-                      <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl col-span-2 md:col-span-1">
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl col-span-2 md:col-span-1">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Work Tasks</span>
-                          <span className="text-[10px] font-extrabold text-emerald-400">{completionPercent}% Done</span>
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Work Tasks</span>
+                          <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">{completionPercent}% Done</span>
                         </div>
-                        <p className="text-base font-black text-white mt-0.5">{doneCount}/{totalCount} Tasks</p>
+                        <p className="text-base font-black text-slate-900 dark:text-white mt-0.5">{doneCount}/{totalCount} Tasks</p>
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white/5 p-2.5 rounded-xl border border-white/10 text-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
                       <div className="flex items-center gap-2">
-                        <Receipt size={15} className="text-amber-400 shrink-0" />
-                        <span className="text-slate-300">
-                          Net Profit Formula: Revenue (₹{packageAmt.toLocaleString()}) - Work Expenses (₹{totalExpenses.toLocaleString()}) = <strong className="text-white">₹{netProfit.toLocaleString()}</strong>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">Remaining Client Balance:</span>
+                        <span className="font-black text-amber-700 dark:text-amber-400 text-sm">₹{balanceAmt.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Receipt size={15} className="text-indigo-500 shrink-0" />
+                        <span className="text-slate-600 dark:text-slate-400">
+                          Net Profit Formula: Revenue (₹{packageAmt.toLocaleString()}) - Work Expenses (₹{totalExpenses.toLocaleString()}) = <strong className="text-slate-900 dark:text-white">₹{netProfit.toLocaleString()}</strong>
                         </span>
                       </div>
                       {onViewExpenses && (
@@ -635,29 +639,29 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
 
           return (
             <div key={ev.id} className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden space-y-0">
-              {/* Intuitive Redesigned Function Ceremony Header */}
-              <div className="p-4 bg-slate-900 text-white dark:bg-slate-950 flex flex-col justify-between gap-3 border-b border-slate-800">
+              {/* Intuitive Clean White Function Ceremony Header */}
+              <div className="p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col justify-between gap-3 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-0.5 bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 font-black text-[10px] uppercase rounded-full tracking-wider">
+                      <span className="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800 font-black text-[10px] uppercase rounded-full tracking-wider">
                         {ev.type} Ceremony
                       </span>
                       <span className={`px-2.5 py-0.5 font-black text-[10px] uppercase rounded-full border ${
                         ev.sideType === 'Both' 
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-400/40' 
-                          : 'bg-blue-500/20 text-blue-300 border-blue-400/40'
+                          ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800' 
+                          : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
                       }`}>
                         {ev.sideType === 'Both' ? '👑 Both Sides' : '👤 Single Side'}
                       </span>
                     </div>
-                    <h3 className="text-base font-black text-white">{ev.type}</h3>
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-300 font-medium">
-                      <span className="flex items-center gap-1"><Calendar size={12} className="text-indigo-400 shrink-0" /> {ev.date || 'Date TBD'} {ev.time ? `@ ${ev.time}` : ''}</span>
-                      <span className="flex items-center gap-1"><MapPin size={12} className="text-indigo-400 shrink-0" /> {ev.venue || 'Venue TBD'}</span>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">{ev.type}</h3>
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+                      <span className="flex items-center gap-1"><Calendar size={12} className="text-indigo-600 dark:text-indigo-400 shrink-0" /> {ev.date || 'Date TBD'} {ev.time ? `@ ${ev.time}` : ''}</span>
+                      <span className="flex items-center gap-1"><MapPin size={12} className="text-indigo-600 dark:text-indigo-400 shrink-0" /> {ev.venue || 'Venue TBD'}</span>
                     </div>
                     {ev.notes && (
-                      <p className="text-[11px] text-slate-400 italic pt-0.5">"{ev.notes}"</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 italic pt-0.5">"{ev.notes}"</p>
                     )}
                   </div>
 
@@ -668,23 +672,23 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                       onClick={() => handleSyncToGoogleCalendar(ev)}
                       disabled={syncingCalendarEventId === ev.id}
                       title="Sync ceremony with Google Calendar"
-                      className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] rounded-xl transition-all flex items-center gap-1 border border-white/20 shrink-0"
+                      className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] rounded-xl transition-all flex items-center gap-1 border border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700 shrink-0"
                     >
-                      <Calendar size={13} className="text-indigo-300" />
+                      <Calendar size={13} className="text-indigo-600 dark:text-indigo-400" />
                       <span>{syncingCalendarEventId === ev.id ? 'Syncing...' : 'Google Cal'}</span>
                     </button>
                   )}
                 </div>
 
                 {/* Intuitive Action Ribbon (Crew, HDD, Tasks) */}
-                <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-1.5">
                     {isAdmin && (
                       <>
                         <button
                           type="button"
                           onClick={() => openAddCrewModal(ev.id)}
-                          className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs"
+                          className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs"
                         >
                           <UserPlus size={13} />
                           <span>+ Crew ({totalCrewCount})</span>
@@ -693,7 +697,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                         <button
                           type="button"
                           onClick={() => openAddHddModal(ev.id)}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs"
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs dark:bg-slate-700 dark:hover:bg-slate-600"
                         >
                           <HardDrive size={13} />
                           <span>+ HDD ({totalHddCount})</span>
@@ -704,7 +708,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                     <button
                       type="button"
                       onClick={() => onAssignWork(client, ev.id)}
-                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs"
+                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs"
                     >
                       <Plus size={13} />
                       <span>+ Task ({eventTasks.length})</span>
@@ -716,7 +720,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                       href={calendarSyncResults[ev.id].htmlLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] font-bold text-emerald-300 hover:text-emerald-200 underline flex items-center gap-0.5"
+                      className="text-[11px] font-bold text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 underline flex items-center gap-0.5"
                     >
                       <span>Open Cal</span>
                       <ExternalLink size={10} />
