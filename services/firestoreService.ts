@@ -11,7 +11,7 @@ import {
   getDocFromServer
 } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
-import { Client, Assignment, Employee, LeaveRequest, LeavePolicyConfig } from '../types';
+import { Client, Assignment, Employee, LeaveRequest, LeavePolicyConfig, TaskExpense, SystemNotification } from '../types';
 
 const effectiveConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || (firebaseConfig as any).apiKey,
@@ -28,6 +28,12 @@ export const db = (effectiveConfig.firestoreDatabaseId && effectiveConfig.firest
   ? getFirestore(app, effectiveConfig.firestoreDatabaseId)
   : getFirestore(app);
 export const auth = getAuth(app);
+
+// Helper to sanitize objects for Firestore (converts undefined values to null to avoid setDoc errors)
+export function sanitizeForFirestore<T>(data: T): T {
+  if (data === undefined) return null as any;
+  return JSON.parse(JSON.stringify(data, (_, value) => (value === undefined ? null : value)));
+}
 
 // Attempt anonymous authentication if no user is signed in
 try {
@@ -118,7 +124,8 @@ export function subscribeClients(onData: (clients: Client[]) => void) {
 export async function saveClientToFirestore(client: Client) {
   const path = `clients/${client.id}`;
   try {
-    await setDoc(doc(db, 'clients', client.id), client);
+    const cleanClient = sanitizeForFirestore(client);
+    await setDoc(doc(db, 'clients', client.id), cleanClient);
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -154,7 +161,8 @@ export function subscribeAssignments(onData: (assignments: Assignment[]) => void
 export async function saveAssignmentToFirestore(assignment: Assignment) {
   const path = `assignments/${assignment.id}`;
   try {
-    await setDoc(doc(db, 'assignments', assignment.id), assignment);
+    const cleanAssignment = sanitizeForFirestore(assignment);
+    await setDoc(doc(db, 'assignments', assignment.id), cleanAssignment);
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -190,7 +198,8 @@ export function subscribeEmployees(onData: (employees: Employee[]) => void) {
 export async function saveEmployeeToFirestore(employee: Employee) {
   const path = `employees/${employee.id}`;
   try {
-    await setDoc(doc(db, 'employees', employee.id), employee);
+    const cleanEmp = sanitizeForFirestore(employee);
+    await setDoc(doc(db, 'employees', employee.id), cleanEmp);
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -200,6 +209,82 @@ export async function deleteEmployeeFromFirestore(employeeId: string) {
   const path = `employees/${employeeId}`;
   try {
     await deleteDoc(doc(db, 'employees', employeeId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+// Expense Tracker Operations
+export function subscribeExpenses(onData: (expenses: TaskExpense[]) => void) {
+  const path = 'expenses';
+  return onSnapshot(
+    collection(db, path),
+    (snapshot) => {
+      const items: TaskExpense[] = [];
+      snapshot.forEach((docSnap) => {
+        items.push(docSnap.data() as TaskExpense);
+      });
+      onData(items);
+    },
+    (error) => {
+      handleFirestoreError(error, OperationType.GET, path);
+    }
+  );
+}
+
+export async function saveExpenseToFirestore(expense: TaskExpense) {
+  const path = `expenses/${expense.id}`;
+  try {
+    const cleanExp = sanitizeForFirestore(expense);
+    await setDoc(doc(db, 'expenses', expense.id), cleanExp);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteExpenseFromFirestore(expenseId: string) {
+  const path = `expenses/${expenseId}`;
+  try {
+    await deleteDoc(doc(db, 'expenses', expenseId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+// System Notifications Operations
+export function subscribeNotifications(onData: (notifications: SystemNotification[]) => void) {
+  const path = 'notifications';
+  return onSnapshot(
+    collection(db, path),
+    (snapshot) => {
+      const items: SystemNotification[] = [];
+      snapshot.forEach((docSnap) => {
+        items.push(docSnap.data() as SystemNotification);
+      });
+      // Sort newest first
+      items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      onData(items);
+    },
+    (error) => {
+      handleFirestoreError(error, OperationType.GET, path);
+    }
+  );
+}
+
+export async function saveNotificationToFirestore(notification: SystemNotification) {
+  const path = `notifications/${notification.id}`;
+  try {
+    const cleanNotif = sanitizeForFirestore(notification);
+    await setDoc(doc(db, 'notifications', notification.id), cleanNotif);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteNotificationFromFirestore(notificationId: string) {
+  const path = `notifications/${notificationId}`;
+  try {
+    await deleteDoc(doc(db, 'notifications', notificationId));
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
@@ -231,7 +316,8 @@ export function subscribeLeaveRequests(onData: (requests: LeaveRequest[]) => voi
 export async function saveLeaveRequestToFirestore(request: LeaveRequest) {
   const path = `leaveRequests/${request.id}`;
   try {
-    await setDoc(doc(db, 'leaveRequests', request.id), request);
+    const cleanReq = sanitizeForFirestore(request);
+    await setDoc(doc(db, 'leaveRequests', request.id), cleanReq);
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -267,7 +353,8 @@ export function subscribeLeavePolicy(onData: (policy: LeavePolicyConfig) => void
 export async function saveLeavePolicyToFirestore(policy: LeavePolicyConfig) {
   const path = 'settings/leavePolicy';
   try {
-    await setDoc(doc(db, 'settings', 'leavePolicy'), policy);
+    const cleanPolicy = sanitizeForFirestore(policy);
+    await setDoc(doc(db, 'settings', 'leavePolicy'), cleanPolicy);
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -283,21 +370,21 @@ export async function seedInitialFirestoreData(
     const clientsSnap = await getDocs(collection(db, 'clients'));
     if (clientsSnap.empty && initialClients.length > 0) {
       for (const client of initialClients) {
-        await setDoc(doc(db, 'clients', client.id), client);
+        await setDoc(doc(db, 'clients', client.id), sanitizeForFirestore(client));
       }
     }
 
     const assignmentsSnap = await getDocs(collection(db, 'assignments'));
     if (assignmentsSnap.empty && initialAssignments.length > 0) {
       for (const assignment of initialAssignments) {
-        await setDoc(doc(db, 'assignments', assignment.id), assignment);
+        await setDoc(doc(db, 'assignments', assignment.id), sanitizeForFirestore(assignment));
       }
     }
 
     const employeesSnap = await getDocs(collection(db, 'employees'));
     if (employeesSnap.empty && initialEmployees.length > 0) {
       for (const emp of initialEmployees) {
-        await setDoc(doc(db, 'employees', emp.id), emp);
+        await setDoc(doc(db, 'employees', emp.id), sanitizeForFirestore(emp));
       }
     }
 

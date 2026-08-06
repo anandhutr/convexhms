@@ -30,6 +30,16 @@ export interface SubTask {
   completed: boolean;
 }
 
+export interface TaskComment {
+  id: string;
+  assignmentId: string;
+  authorId: string;
+  authorName: string;
+  authorRole?: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface Assignment {
   id: string;
   title: string;
@@ -39,9 +49,49 @@ export interface Assignment {
   priority: Priority;
   dueDate: string;
   createdAt: string;
+  updatedAt?: string;
+  createdBy?: string; // Employee ID or 'admin'
   clientId?: string;
   eventId?: string;
   subtasks?: SubTask[];
+  comments?: TaskComment[];
+}
+
+export type ExpenseCategory = 'Travel' | 'Equipment' | 'Food & Stay' | 'Freelancer/Vendor' | 'Software/Assets' | 'Other';
+
+export interface TaskExpense {
+  id: string;
+  assignmentId: string;
+  assignmentTitle?: string;
+  clientId?: string;
+  clientName?: string;
+  title: string;
+  amount: number;
+  category: ExpenseCategory;
+  date: string;
+  addedBy: string; // Employee ID or 'admin'
+  addedByName?: string;
+  notes?: string;
+  status?: 'Approved' | 'Pending';
+}
+
+export type NotificationType = 'edit_request' | 'delete_request' | 'task_created' | 'status_change' | 'comment_added' | 'expense_added' | 'general';
+
+export interface SystemNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  targetId?: string; // assignmentId, clientId, etc.
+  targetType?: 'assignment' | 'client' | 'expense' | 'general';
+  requestedBy: {
+    id: string;
+    name: string;
+    role: string;
+  };
+  proposedData?: Partial<Assignment>; // for edit requests
+  createdAt: string;
+  status: 'pending' | 'approved' | 'rejected' | 'read';
 }
 
 // Client Management Types
@@ -90,6 +140,8 @@ export interface Client {
   packageAmount?: number;
   advancePaid?: number;
   paymentNotes?: string;
+  brideInstagram?: string;
+  groomInstagram?: string;
   events: ClientEvent[];
   status: 'Lead' | 'Booked' | 'Completed';
 }
@@ -125,6 +177,8 @@ export interface AppState {
   employees: Employee[];
   assignments: Assignment[];
   clients: Client[];
+  expenses: TaskExpense[];
+  notifications: SystemNotification[];
   selectedEmployee: Employee | null;
   selectedAssignment: Assignment | null;
   selectedClient: Client | null;
@@ -132,5 +186,5 @@ export interface AppState {
   isModalOpen: boolean;
   isAssignmentModalOpen: boolean;
   isClientModalOpen: boolean;
-  view: 'dashboard' | 'directory' | 'ai-insights' | 'assignments' | 'clients' | 'leaves';
+  view: 'dashboard' | 'directory' | 'ai-insights' | 'assignments' | 'clients' | 'leaves' | 'expenses';
 }

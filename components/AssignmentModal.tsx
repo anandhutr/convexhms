@@ -126,7 +126,7 @@ const AssignmentModal: React.FC<AssignmentModalProps> = ({
 
       // Auto-suggest title if blank
       if (!prev.title && clientObj) {
-        const evType = clientObj.events[0]?.type || 'Event';
+        const evType = clientObj.events[0]?.type || 'Function';
         updated.title = `${evType} Production for ${clientObj.name}`;
       }
 
@@ -205,13 +205,13 @@ const AssignmentModal: React.FC<AssignmentModalProps> = ({
 
               {selectedClient && (
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Confirmed Event / Project</label>
+                  <label className="text-xs font-semibold text-slate-700">Confirmed Function / Project</label>
                   <select
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
                     value={formData.eventId || ''}
                     onChange={e => handleEventChange(e.target.value)}
                   >
-                    <option value="">All Events for {selectedClient.name}</option>
+                    <option value="">All Functions for {selectedClient.name}</option>
                     {selectedClient.events.map(ev => (
                       <option key={ev.id} value={ev.id}>
                         {ev.type} ({ev.date || 'TBD'})
@@ -292,9 +292,11 @@ const AssignmentModal: React.FC<AssignmentModalProps> = ({
               onChange={e => setFormData({...formData, assigneeId: e.target.value})}
             >
               <option value="">Select an employee</option>
-              {employees.map(e => (
-                <option key={e.id} value={e.id}>{e.name} ({e.role})</option>
-              ))}
+              {employees
+                .filter(e => e.status !== 'Terminated' && (e as any).status !== 'Archived')
+                .map(e => (
+                  <option key={e.id} value={e.id}>{e.name} ({e.role})</option>
+                ))}
             </select>
             {suggestionReason && (
               <p className="text-[10px] text-indigo-500 bg-indigo-50 p-2 rounded-lg italic">

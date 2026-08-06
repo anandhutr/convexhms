@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Client, Assignment, Employee, AssignmentStatus, Religion, ClientEvent, EventCrewMember, EventHddStorage, CrewRole, SideType } from '../types';
+import { Client, Assignment, Employee, AssignmentStatus, Religion, ClientEvent, EventCrewMember, EventHddStorage, CrewRole, SideType, TaskExpense } from '../types';
 import { 
   ArrowLeft, Calendar, MapPin, Mail, Phone, Sparkles, Plus, 
   CheckCircle2, Clock, AlertCircle, ChevronRight, User, Edit2, 
   Trash2, FileText, ChevronDown, ChevronUp, CheckSquare, Building2, Briefcase, ExternalLink, ShieldAlert,
-  Camera, Video, HardDrive, Copy, Check, Users, PhoneCall, X, Folder, UserPlus, HardDriveDownload
+  Camera, Video, HardDrive, Copy, Check, Users, PhoneCall, X, Folder, UserPlus, HardDriveDownload, Receipt
 } from 'lucide-react';
 import TaskProgressBar from './TaskProgressBar';
 import ConfirmModal from './ConfirmModal';
@@ -15,6 +15,8 @@ interface ClientDetailProps {
   allClients: Client[];
   assignments: Assignment[];
   employees: Employee[];
+  expenses?: TaskExpense[];
+  isAdmin?: boolean;
   onSelectClient: (clientId: string) => void;
   onBack: () => void;
   onEditClient: (client: Client) => void;
@@ -26,6 +28,7 @@ interface ClientDetailProps {
   onDeleteAssignment: (assignmentId: string) => void;
   onEditAssignment: (assignment: Assignment) => void;
   onDeleteClient?: (clientId: string) => void;
+  onViewExpenses?: () => void;
 }
 
 const ClientDetail: React.FC<ClientDetailProps> = ({
@@ -33,6 +36,8 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
   allClients,
   assignments,
   employees,
+  expenses = [],
+  isAdmin = true,
   onSelectClient,
   onBack,
   onEditClient,
@@ -44,6 +49,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
   onDeleteAssignment,
   onEditAssignment,
   onDeleteClient,
+  onViewExpenses,
 }) => {
   const [taskFilter, setTaskFilter] = useState<string>('All');
   const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>({});
@@ -113,7 +119,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
     }));
 
     if (result.success) {
-      alert(`✅ Event "${eventToSync.type}" successfully blocked on Google Calendar!`);
+      alert(`✅ Function "${eventToSync.type}" successfully blocked on Google Calendar!`);
     } else {
       alert(`⚠️ Could not sync with Google Calendar: ${result.error}`);
     }
@@ -383,7 +389,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500 mt-2 font-medium">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-500 mt-2 font-medium">
                 <div className="flex items-center gap-1.5">
                   <Mail size={14} className="text-indigo-500 shrink-0" />
                   <span>{client.email || 'No email provided'}</span>
@@ -394,8 +400,32 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Calendar size={14} className="text-indigo-500 shrink-0" />
-                  <span>{client.events.length} Event{client.events.length !== 1 ? 's' : ''}</span>
+                  <span>{client.events.length} Function{client.events.length !== 1 ? 's' : ''}</span>
                 </div>
+
+                {client.brideInstagram && (
+                  <a
+                    href={client.brideInstagram.startsWith('http') ? client.brideInstagram : `https://instagram.com/${client.brideInstagram.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs font-bold text-pink-700 bg-pink-50 border border-pink-200 px-2.5 py-0.5 rounded-lg hover:bg-pink-100 transition-colors"
+                  >
+                    <span>👰 Bride Insta: {client.brideInstagram}</span>
+                    <ExternalLink size={11} />
+                  </a>
+                )}
+
+                {client.groomInstagram && (
+                  <a
+                    href={client.groomInstagram.startsWith('http') ? client.groomInstagram : `https://instagram.com/${client.groomInstagram.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-lg hover:bg-indigo-100 transition-colors"
+                  >
+                    <span>🤵 Groom Insta: {client.groomInstagram}</span>
+                    <ExternalLink size={11} />
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -418,103 +448,156 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               AI Brief
             </button>
 
-            <button
-              onClick={() => onEditClient(client)}
-              className="px-3.5 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5 text-xs"
-            >
-              <Edit2 size={15} />
-              Edit Profile
-            </button>
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => onEditClient(client)}
+                  className="px-3.5 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5 text-xs"
+                >
+                  <Edit2 size={15} />
+                  Edit Profile
+                </button>
 
-            {onDeleteClient && (
-              <button
-                onClick={() => {
-                  setConfirmModal({
-                    isOpen: true,
-                    title: 'Delete Client Profile',
-                    message: `Are you sure you want to delete "${client.name}"? This action cannot be undone and will delete associated tasks.`,
-                    confirmText: 'Delete Client',
-                    type: 'danger',
-                    onConfirm: () => {
-                      onDeleteClient(client.id);
-                      onBack();
-                    }
-                  });
-                }}
-                className="px-3.5 py-2 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-1.5 text-xs"
-              >
-                <Trash2 size={15} />
-                Delete Profile
-              </button>
+                {onDeleteClient && (
+                  <button
+                    onClick={() => {
+                      setConfirmModal({
+                        isOpen: true,
+                        title: 'Delete Client Profile',
+                        message: `Are you sure you want to delete "${client.name}"? This action cannot be undone and will delete associated tasks.`,
+                        confirmText: 'Delete Client',
+                        type: 'danger',
+                        onConfirm: () => {
+                          onDeleteClient(client.id);
+                          onBack();
+                        }
+                      });
+                    }}
+                    className="px-3.5 py-2 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-1.5 text-xs"
+                  >
+                    <Trash2 size={15} />
+                    Delete Profile
+                  </button>
+                )}
+              </>
+            )}
+
+            {!isAdmin && (
+              <span className="px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-extrabold rounded-xl border border-slate-200">
+                🔒 Staff View-Only (Financials Hidden)
+              </span>
             )}
           </div>
         </div>
 
-        {/* Financial & Payment Compact Dashboard Card */}
-        <div className="mt-5 p-4 bg-gradient-to-r from-slate-900 to-indigo-950 rounded-2xl text-white shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-800/50 pb-3 mb-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-indigo-500/20 text-indigo-300 rounded-lg border border-indigo-400/30">
-                <FileText size={16} />
+        {/* Financial & Payment Compact Dashboard Card - ADMIN ONLY */}
+        {isAdmin ? (
+          <div className="mt-5 p-4 bg-gradient-to-r from-slate-900 to-indigo-950 rounded-2xl text-white shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-800/50 pb-3 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-indigo-500/20 text-indigo-300 rounded-lg border border-indigo-400/30">
+                  <FileText size={16} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-white">Payment & Commercial Breakdown</h3>
+                  <p className="text-[10px] text-slate-300 font-medium">Package pricing, advance collected, & pending balance</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-extrabold text-sm text-white">Payment & Commercial Breakdown</h3>
-                <p className="text-[10px] text-slate-300 font-medium">Package pricing, advance collected, & pending balance</p>
+
+              <div className="flex items-center gap-2">
+                <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg border tracking-wider ${
+                  packageAmt > 0 && balanceAmt <= 0
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                    : advancePaid > 0
+                    ? 'bg-blue-500/20 text-blue-300 border-blue-400/40'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                }`}>
+                  {packageAmt > 0 && balanceAmt <= 0 ? '✓ Paid In Full' : advancePaid > 0 ? 'Partial Advance Paid' : 'Pending Advance'}
+                </span>
+                <button 
+                  type="button" 
+                  onClick={() => onEditClient(client)}
+                  className="text-[11px] text-indigo-300 hover:text-white font-bold underline ml-1"
+                >
+                  Update Payments
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg border tracking-wider ${
-                packageAmt > 0 && balanceAmt <= 0
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
-                  : advancePaid > 0
-                  ? 'bg-blue-500/20 text-blue-300 border-blue-400/40'
-                  : 'bg-amber-500/20 text-amber-300 border-amber-400/40'
-              }`}>
-                {packageAmt > 0 && balanceAmt <= 0 ? '✓ Paid In Full' : advancePaid > 0 ? 'Partial Advance Paid' : 'Pending Advance'}
-              </span>
-              <button 
-                type="button" 
-                onClick={() => onEditClient(client)}
-                className="text-[11px] text-indigo-300 hover:text-white font-bold underline ml-1"
-              >
-                Update Payments
-              </button>
-            </div>
+            {(() => {
+              const clientExpenses = expenses.filter(e => e.clientId === client.id || assignments.some(a => a.clientId === client.id && a.id === e.assignmentId));
+              const totalExpenses = clientExpenses.reduce((sum, e) => sum + e.amount, 0);
+              const netProfit = packageAmt - totalExpenses;
+              const margin = packageAmt > 0 ? Math.round((netProfit / packageAmt) * 100) : 0;
+
+              return (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
+                      <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Total Package Revenue</span>
+                      <p className="text-base font-black text-white mt-0.5">₹{packageAmt.toLocaleString()}</p>
+                    </div>
+
+                    <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                      <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Advance Collected</span>
+                      <p className="text-base font-black text-emerald-400 mt-0.5">₹{advancePaid.toLocaleString()}</p>
+                    </div>
+
+                    <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                      <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Work Expenses</span>
+                      <p className="text-base font-black text-amber-400 mt-0.5">₹{totalExpenses.toLocaleString()}</p>
+                      <span className="text-[9px] text-amber-200/80 font-medium block">{clientExpenses.length} expense log(s)</span>
+                    </div>
+
+                    <div className="p-2.5 bg-indigo-500/10 border border-indigo-400/20 rounded-xl">
+                      <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Work Net Profit</span>
+                      <p className="text-base font-black text-indigo-200 mt-0.5">₹{netProfit.toLocaleString()}</p>
+                      <span className="text-[9px] text-indigo-300/80 font-bold block">{margin}% Net Margin</span>
+                    </div>
+
+                    <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl col-span-2 md:col-span-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Work Tasks</span>
+                        <span className="text-[10px] font-extrabold text-emerald-400">{completionPercent}% Done</span>
+                      </div>
+                      <p className="text-base font-black text-white mt-0.5">{doneCount}/{totalCount} Tasks</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white/5 p-2.5 rounded-xl border border-white/10 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Receipt size={15} className="text-amber-400 shrink-0" />
+                      <span className="text-slate-300">
+                        Net Profit Formula: Revenue (₹{packageAmt.toLocaleString()}) - Work Expenses (₹{totalExpenses.toLocaleString()}) = <strong className="text-white">₹{netProfit.toLocaleString()}</strong>
+                      </span>
+                    </div>
+                    {onViewExpenses && (
+                      <button
+                        type="button"
+                        onClick={onViewExpenses}
+                        className="text-indigo-300 hover:text-white font-bold text-xs underline shrink-0"
+                      >
+                        Manage Client Expenses →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {client.paymentNotes && (
+              <div className="mt-3 text-[11px] text-slate-300 italic bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 flex items-center gap-2">
+                <span className="font-extrabold text-amber-300 not-italic uppercase text-[9px] shrink-0">Note:</span>
+                <span className="truncate">{client.paymentNotes}</span>
+              </div>
+            )}
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
-              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Total Package</span>
-              <p className="text-base font-black text-white mt-0.5">₹{packageAmt.toLocaleString()}</p>
-            </div>
-
-            <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-              <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Advance Collected</span>
-              <p className="text-base font-black text-emerald-400 mt-0.5">₹{advancePaid.toLocaleString()}</p>
-            </div>
-
-            <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-              <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Balance Due</span>
-              <p className="text-base font-black text-amber-400 mt-0.5">₹{balanceAmt.toLocaleString()}</p>
-            </div>
-
-            <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Work Tasks</span>
-                <span className="text-[10px] font-extrabold text-emerald-400">{completionPercent}% Done</span>
-              </div>
-              <p className="text-base font-black text-white mt-0.5">{doneCount}/{totalCount} Tasks</p>
-            </div>
+        ) : (
+          <div className="mt-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-center text-xs text-slate-500 font-semibold flex items-center justify-center gap-2">
+            <ShieldAlert size={16} className="text-slate-400" />
+            <span>Financial payment details restricted. Employee view-only mode active.</span>
           </div>
-
-          {client.paymentNotes && (
-            <div className="mt-3 text-[11px] text-slate-300 italic bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 flex items-center gap-2">
-              <span className="font-extrabold text-amber-300 not-italic uppercase text-[9px] shrink-0">Note:</span>
-              <span className="truncate">{client.paymentNotes}</span>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* ========================================================= */}
@@ -524,10 +607,10 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black text-slate-900 flex items-center gap-2.5">
             <Calendar className="text-indigo-600" size={22} />
-            <span>Event Management & Crew/HDD Allocation</span>
+            <span>Function Management & Crew/HDD Allocation</span>
           </h2>
           <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
-            {client.events.length} Scheduled Event{client.events.length !== 1 ? 's' : ''}
+            {client.events.length} Scheduled Function{client.events.length !== 1 ? 's' : ''}
           </span>
         </div>
 
@@ -795,7 +878,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                   ) : (
                     <div className="p-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400 text-xs flex flex-col items-center gap-1.5">
                       <HardDrive size={20} className="text-slate-300" />
-                      <span>No hard drive backup paths recorded for this event.</span>
+                      <span>No hard drive backup paths recorded for this function.</span>
                       <button 
                         type="button"
                         onClick={() => openAddHddModal(ev.id)} 
@@ -994,7 +1077,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
             <div>
               <p className="font-bold text-slate-800">No work assignments found</p>
               <p className="text-xs text-slate-500 mt-1">
-                Assign studio work derived from this client's confirmed events to track production progress.
+                Assign studio work derived from this client's confirmed functions to track production progress.
               </p>
             </div>
             <button
@@ -1044,11 +1127,13 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
                 >
                   <option value="">-- Choose Employee (Optional) --</option>
-                  {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.name} ({emp.role} - {emp.department})
-                    </option>
-                  ))}
+                  {employees
+                    .filter(emp => emp.status !== 'Terminated' && (emp as any).status !== 'Archived')
+                    .map(emp => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.name} ({emp.role} - {emp.department})
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -1189,7 +1274,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                   }}
                   value={
                     [
-                      ...employees.map(e => e.name),
+                      ...employees.filter(e => e.status !== 'Terminated' && (e as any).status !== 'Archived').map(e => e.name),
                       ...(client.events.flatMap(ev => ev.crew || []).map(c => c.name))
                     ].includes(copiedBy) ? copiedBy : ''
                   }
@@ -1198,15 +1283,17 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                   <option value="">-- Quick Select Person (Employees & Photographers) --</option>
                   {employees.length > 0 && (
                     <optgroup label="Studio Employees">
-                      {employees.map(emp => (
-                        <option key={`emp_select_${emp.id}`} value={emp.name}>
-                          👤 {emp.name} ({emp.role})
-                        </option>
-                      ))}
+                      {employees
+                        .filter(emp => emp.status !== 'Terminated' && (emp as any).status !== 'Archived')
+                        .map(emp => (
+                          <option key={`emp_select_${emp.id}`} value={emp.name}>
+                            👤 {emp.name} ({emp.role})
+                          </option>
+                        ))}
                     </optgroup>
                   )}
                   {client.events.flatMap(ev => ev.crew || []).length > 0 && (
-                    <optgroup label="Event Crew & Photographers">
+                    <optgroup label="Function Crew & Photographers">
                       {Array.from(
                         new Map(
                           client.events

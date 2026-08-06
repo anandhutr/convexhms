@@ -19,6 +19,8 @@ import { GoogleCalendarButton } from './components/GoogleCalendarButton';
 import { getDueTasks } from './components/DueNotificationsBanner';
 import { Plus, Search as SearchIcon, X, Sparkles, RefreshCw, UserCheck, LogOut, KeyRound } from 'lucide-react';
 import { generateEventCreativeBrief } from './services/geminiService';
+import ExpenseTracker from './components/ExpenseTracker';
+import NotificationCenter from './components/NotificationCenter';
 import { 
   testFirestoreConnection,
   seedInitialFirestoreData,
@@ -27,6 +29,12 @@ import {
   subscribeEmployees,
   subscribeLeaveRequests,
   subscribeLeavePolicy,
+  subscribeExpenses,
+  saveExpenseToFirestore,
+  deleteExpenseFromFirestore,
+  subscribeNotifications,
+  saveNotificationToFirestore,
+  deleteNotificationFromFirestore,
   saveClientToFirestore,
   deleteClientFromFirestore,
   saveAssignmentToFirestore,
@@ -127,6 +135,10 @@ const App: React.FC = () => {
   const [leaveRequests, setLeaveRequests] = useState<import('./types').LeaveRequest[]>([]);
   const [leavePolicy, setLeavePolicy] = useState<import('./types').LeavePolicyConfig>(DEFAULT_LEAVE_POLICY);
 
+  // Expenses & System Notifications State
+  const [expenses, setExpenses] = useState<import('./types').TaskExpense[]>([]);
+  const [systemNotifications, setSystemNotifications] = useState<import('./types').SystemNotification[]>([]);
+
   // Sync persistence & Firestore Subscriptions
   useEffect(() => {
     testFirestoreConnection();
@@ -153,6 +165,14 @@ const App: React.FC = () => {
       setLeavePolicy(policy);
     });
 
+    const unsubExpenses = subscribeExpenses(fetchedExpenses => {
+      setExpenses(fetchedExpenses);
+    });
+
+    const unsubNotifications = subscribeNotifications(fetchedNotifs => {
+      setSystemNotifications(fetchedNotifs);
+    });
+
     const unsubAuth = subscribeAuthUser((authUser) => {
       if (authUser) {
         const { roleId } = matchOrCreateEmployeeFromGoogleUser(authUser, employees);
@@ -167,6 +187,8 @@ const App: React.FC = () => {
       unsubEmployees();
       unsubLeaveRequests();
       unsubLeavePolicy();
+      unsubExpenses();
+      unsubNotifications();
       unsubAuth();
     };
   }, []);
@@ -178,15 +200,18 @@ const App: React.FC = () => {
   useEffect(() => localStorage.setItem(CURRENT_ROLE_KEY, currentRoleId), [currentRoleId]);
   useEffect(() => localStorage.setItem(LOGGED_IN_KEY, JSON.stringify(isLoggedIn)), [isLoggedIn]);
 
+  const currentLoggedInEmp = currentRoleId !== 'admin' ? employees.find(e => e.id === currentRoleId) : null;
+  const isCurrentAdmin = currentRoleId === 'admin' || currentLoggedInEmp?.accessLevel === 'admin';
+
   // Restrict access to Directory and Client CRM for non-admin employees
   useEffect(() => {
-    if (currentRoleId !== 'admin' && (state.view === 'directory' || state.view === 'clients')) {
+    if (!isCurrentAdmin && (state.view === 'directory' || state.view === 'clients')) {
       setState(prev => ({ ...prev, view: 'dashboard' }));
     }
-  }, [currentRoleId, state.view]);
+  }, [currentRoleId, isCurrentAdmin, state.view]);
 
   const handleSetView = (view: AppState['view']) => {
-    if (currentRoleId !== 'admin' && (view === 'directory' || view === 'clients')) {
+    if (!isCurrentAdmin && (view === 'directory' || view === 'clients')) {
       return;
     }
     setState(prev => ({ ...prev, view }));
@@ -266,15 +291,64 @@ const App: React.FC = () => {
   };
 
   const handleSubmitAssignment = (data: Partial<Assignment>) => {
+    const isAssigningToOther = !isCurrentAdmin && data.assigneeId && data.assigneeId !== currentRoleId;
+    const assignedEmp = employees.find(e => e.id === data.assigneeId);
+
     if (state.selectedAssignment) {
       const updated = { ...state.selectedAssignment, ...data } as Assignment;
       setAssignments(prev => prev.map(a => a.id === state.selectedAssignment?.id ? updated : a));
       saveAssignmentToFirestore(updated);
+
+      if (isAssigningToOther) {
+        saveNotificationToFirestore({
+          id: Math.random().toString(36).substr(2, 9),
+          type: 'assign_request',
+          title: 'Task Re-assignment Approval Needed',
+          message: `${currentLoggedInEmp?.name || 'Staff'} requested to re-assign task "${updated.title}" to ${assignedEmp?.name || 'another staff member'}.`,
+          targetId: updated.id,
+          targetType: 'assignment',
+          requestedBy: {
+            id: currentLoggedInEmp?.id || 'emp',
+            name: currentLoggedInEmp?.name || 'Employee',
+            role: currentLoggedInEmp?.role || 'Staff'
+          },
+          createdAt: new Date().toISOString(),
+          status: 'pending'
+        });
+        alert(`⏳ Task re-assignment submitted for Admin Approval! An admin must approve assigning "${updated.title}" to ${assignedEmp?.name || 'this employee'}.`);
+      }
+
       setState(prev => ({ ...prev, isAssignmentModalOpen: false, selectedAssignment: null }));
     } else {
-      const newTask = { ...data, id: Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() } as Assignment;
+      const newTask = { 
+        ...data, 
+        id: Math.random().toString(36).substr(2, 9), 
+        createdAt: new Date().toISOString(),
+        approvalStatus: isAssigningToOther ? 'pending' : 'approved'
+      } as Assignment;
+
       setAssignments(prev => [newTask, ...prev]);
       saveAssignmentToFirestore(newTask);
+
+      if (isAssigningToOther) {
+        saveNotificationToFirestore({
+          id: Math.random().toString(36).substr(2, 9),
+          type: 'assign_request',
+          title: 'Task Assignment Approval Request',
+          message: `${currentLoggedInEmp?.name || 'Staff'} requested to assign task "${newTask.title}" to ${assignedEmp?.name || 'another staff member'}.`,
+          targetId: newTask.id,
+          targetType: 'assignment',
+          requestedBy: {
+            id: currentLoggedInEmp?.id || 'emp',
+            name: currentLoggedInEmp?.name || 'Employee',
+            role: currentLoggedInEmp?.role || 'Staff'
+          },
+          createdAt: new Date().toISOString(),
+          status: 'pending'
+        });
+        alert(`⏳ Task assignment submitted for Admin Approval! An admin must approve assigning "${newTask.title}" to ${assignedEmp?.name || 'this employee'}.`);
+      }
+
       setState(prev => ({ ...prev, isAssignmentModalOpen: false }));
     }
     setAssignmentModalClientId(null);
@@ -361,7 +435,7 @@ const App: React.FC = () => {
     setConfirmModalConfig({
       isOpen: true,
       title: 'Delete Client Profile',
-      message: `Are you sure you want to delete "${clientObj?.name || 'this client'}"? All associated shoot events and assigned tasks will also be deleted.`,
+      message: `Are you sure you want to delete "${clientObj?.name || 'this client'}"? All associated shoot functions and assigned tasks will also be deleted.`,
       confirmText: 'Delete Client',
       type: 'danger',
       onConfirm: () => handleDeleteClient(id)
@@ -459,7 +533,6 @@ const App: React.FC = () => {
   };
 
   const activeClientObject = clients.find(c => c.id === selectedClientId);
-  const currentLoggedInEmp = currentRoleId !== 'admin' ? employees.find(e => e.id === currentRoleId) : null;
 
   return (
     <div className="min-h-screen bg-slate-50 flex relative">
@@ -486,44 +559,75 @@ const App: React.FC = () => {
             <GoogleCalendarButton />
           </div>
 
-          {state.view !== 'employees' && (
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <button 
-                type="button"
-                onClick={() => {
-                  setAssignmentModalClientId(null);
-                  setAssignmentModalEventId(null);
-                  handleOpenAssignmentModal();
-                }}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20 text-xs shrink-0"
-              >
-                <Plus size={15} />
-                <span>New Work</span>
-              </button>
+          <div className="flex items-center gap-3">
+            {/* Real-time Admin Notification Center Bell */}
+            <NotificationCenter 
+              notifications={systemNotifications}
+              isAdmin={isCurrentAdmin}
+              onApproveRequest={(notif) => {
+                if (notif.targetId && notif.type === 'edit_request') {
+                  const targetTask = assignments.find(a => a.id === notif.targetId);
+                  if (targetTask) handleOpenAssignmentModal(targetTask);
+                } else if (notif.targetId && notif.type === 'delete_request') {
+                  deleteAssignmentFromFirestore(notif.targetId);
+                  setAssignments(prev => prev.filter(a => a.id !== notif.targetId));
+                } else if (notif.targetId && notif.type === 'assign_request') {
+                  const targetTask = assignments.find(a => a.id === notif.targetId);
+                  if (targetTask) {
+                    const approvedTask = { ...targetTask, approvalStatus: 'approved' };
+                    setAssignments(prev => prev.map(a => a.id === targetTask.id ? approvedTask : a));
+                    saveAssignmentToFirestore(approvedTask);
+                  }
+                }
+                saveNotificationToFirestore({ ...notif, status: 'approved' });
+              }}
+              onRejectRequest={(notif) => {
+                saveNotificationToFirestore({ ...notif, status: 'rejected' });
+              }}
+              onDismissNotif={(id) => {
+                deleteNotificationFromFirestore(id);
+              }}
+            />
 
-              {(!currentLoggedInEmp || currentRoleId === 'admin') && (
+            {state.view !== 'employees' && (
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <button 
                   type="button"
-                  onClick={() => handleOpenClientModal()}
-                  className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-md text-xs shrink-0"
+                  onClick={() => {
+                    setAssignmentModalClientId(null);
+                    setAssignmentModalEventId(null);
+                    handleOpenAssignmentModal();
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20 text-xs shrink-0"
                 >
                   <Plus size={15} />
-                  <span>New Client</span>
+                  <span>New Work</span>
                 </button>
-              )}
 
-              {(!currentLoggedInEmp || currentRoleId === 'admin') && (
-                <button 
-                  type="button"
-                  onClick={() => handleOpenEmployeeModal(null)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold rounded-xl transition-all text-xs shrink-0"
-                >
-                  <Plus size={15} />
-                  <span>New Employee</span>
-                </button>
-              )}
-            </div>
-          )}
+                {isCurrentAdmin && (
+                  <button 
+                    type="button"
+                    onClick={() => handleOpenClientModal()}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-md text-xs shrink-0"
+                  >
+                    <Plus size={15} />
+                    <span>New Client</span>
+                  </button>
+                )}
+
+                {isCurrentAdmin && (
+                  <button 
+                    type="button"
+                    onClick={() => handleOpenEmployeeModal(null)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold rounded-xl transition-all text-xs shrink-0"
+                  >
+                    <Plus size={15} />
+                    <span>New Employee</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Main Content View Switcher */}
@@ -576,6 +680,7 @@ const App: React.FC = () => {
               assignments={assignments} 
               employees={employees}
               clients={clients}
+              expenses={expenses}
               dismissedNotifications={dismissedNotifications}
               currentRoleId={currentRoleId}
               onDismissNotification={handleDismissNotification}
@@ -585,6 +690,7 @@ const App: React.FC = () => {
               onUpdateStatus={handleUpdateAssignmentStatus}
               onToggleSubtask={handleToggleSubtask}
               onDelete={requestDeleteAssignment}
+              onViewExpenses={() => handleNavigate('expenses')}
               onNewTask={(clientId) => {
                 if (clientId) {
                   const clientObj = clients.find(c => c.id === clientId);
@@ -607,6 +713,9 @@ const App: React.FC = () => {
                 allClients={clients}
                 assignments={assignments}
                 employees={employees}
+                expenses={expenses}
+                isAdmin={isCurrentAdmin}
+                currentRoleId={currentRoleId}
                 onSelectClient={handleSelectClient}
                 onBack={handleBackToClientList}
                 onEditClient={handleOpenClientModal}
@@ -621,6 +730,7 @@ const App: React.FC = () => {
                 onDeleteAssignment={requestDeleteAssignment}
                 onEditAssignment={handleOpenAssignmentModal}
                 onDeleteClient={requestDeleteClient}
+                onViewExpenses={() => handleNavigate('expenses')}
               />
             ) : (
               <ClientManagement 
@@ -633,6 +743,37 @@ const App: React.FC = () => {
                 onGenerateBrief={handleGenerateBrief}
               />
             )
+          )}
+
+          {state.view === 'expenses' && (
+            <ExpenseTracker 
+              expenses={expenses}
+              assignments={assignments}
+              clients={clients}
+              employees={employees}
+              currentRoleId={currentRoleId}
+              onSaveExpense={(exp) => {
+                saveExpenseToFirestore(exp);
+                saveNotificationToFirestore({
+                  id: Math.random().toString(36).substr(2, 9),
+                  type: 'expense_added',
+                  title: 'New Work Expense Logged',
+                  message: `${currentLoggedInEmp?.name || 'Staff'} logged an expense of ₹${exp.amount.toLocaleString()} for "${exp.title}".`,
+                  targetId: exp.id,
+                  targetType: 'expense',
+                  requestedBy: {
+                    id: currentLoggedInEmp?.id || 'emp',
+                    name: currentLoggedInEmp?.name || 'Staff',
+                    role: currentLoggedInEmp?.role || 'Staff'
+                  },
+                  createdAt: new Date().toISOString(),
+                  status: 'pending'
+                });
+              }}
+              onDeleteExpense={(id) => {
+                deleteExpenseFromFirestore(id);
+              }}
+            />
           )}
 
           {state.view === 'leaves' && (
@@ -735,7 +876,7 @@ const App: React.FC = () => {
           <div className="text-center space-y-4 bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
             <RefreshCw className="animate-spin text-indigo-600 mx-auto" size={40} />
             <p className="font-bold text-slate-800 text-lg">Gemini AI is generating the creative brief...</p>
-            <p className="text-xs text-slate-500">Analyzing cultural themes, shot ideas, and event requirements.</p>
+            <p className="text-xs text-slate-500">Analyzing cultural themes, shot ideas, and function requirements.</p>
           </div>
         </div>
       )}

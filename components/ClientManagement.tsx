@@ -100,7 +100,7 @@ const ClientManagement: React.FC<ClientManagementProps> = ({
               <tr>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Client Profile</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Tradition</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Confirmed Events</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Confirmed Functions</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Assigned Work</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>
@@ -151,7 +151,7 @@ const ClientManagement: React.FC<ClientManagementProps> = ({
                             <span className="text-slate-500">{ev.date || 'TBD'}</span>
                           </div>
                         ))}
-                        {c.events.length > 2 && <p className="text-[10px] text-indigo-500 font-medium">+ {c.events.length - 2} more events</p>}
+                        {c.events.length > 2 && <p className="text-[10px] text-indigo-500 font-medium">+ {c.events.length - 2} more functions</p>}
                       </div>
                     </td>
 
@@ -233,7 +233,7 @@ const ClientManagement: React.FC<ClientManagementProps> = ({
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     {searchTerm || filterReligion !== 'All' || filterStatus !== 'All'
                       ? 'No client accounts match your current search query or tradition/status filters.'
-                      : 'You have no registered client portfolios. Create a client account to log confirmed event shoots.'}
+                      : 'You have no registered client portfolios. Create a client account to log confirmed function shoots.'}
                   </p>
                 </div>
 

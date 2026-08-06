@@ -57,6 +57,9 @@ const Dashboard: React.FC<DashboardProps> = ({
     return employees.find(e => e.id === currentRoleId) || null;
   }, [currentRoleId, employees]);
 
+  const isAdmin = currentRoleId === 'admin' || currentEmployee?.accessLevel === 'admin';
+  const [adminDashboardView, setAdminDashboardView] = useState<'overview' | 'my-tasks'>('overview');
+
   // Global admin stats
   const stats = useMemo(() => {
     const totalSalary = employees.reduce((sum, e) => sum + e.salary, 0);
@@ -161,10 +164,50 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      {/* Promoted Admin View Banner & Mode Switcher */}
+      {isAdmin && currentEmployee && (
+        <div className="bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-slate-100 border border-amber-300/60 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white font-extrabold flex items-center justify-center text-lg shadow-sm shrink-0">
+              👑
+            </div>
+            <div>
+              <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">Promoted Admin Access</p>
+              <h4 className="text-sm font-extrabold text-slate-900">
+                Logged in as Admin: {currentEmployee.name} ({currentEmployee.role})
+              </h4>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 text-xs font-bold">
+            <button
+              onClick={() => setAdminDashboardView('overview')}
+              className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                adminDashboardView === 'overview' 
+                  ? 'bg-indigo-600 text-white shadow-xs font-extrabold' 
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              👑 Studio Admin Overview
+            </button>
+            <button
+              onClick={() => setAdminDashboardView('my-tasks')}
+              className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                adminDashboardView === 'my-tasks' 
+                  ? 'bg-indigo-600 text-white shadow-xs font-extrabold' 
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              👤 My Personal Tasks ({myTasks.length})
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ========================================================= */}
       {/* ROLE VIEW B: INDIVIDUAL EMPLOYEE ROLE DASHBOARD           */}
       {/* ========================================================= */}
-      {currentEmployee ? (
+      {(!isAdmin || (isAdmin && currentEmployee && adminDashboardView === 'my-tasks')) ? (
         <div className="space-y-8 animate-in fade-in duration-300">
           {/* Employee Hero Profile Badge */}
           <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white rounded-3xl p-6 lg:p-8 shadow-xl relative overflow-hidden">
@@ -410,7 +453,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div>
                   <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
                     <Video className="text-indigo-600" size={22} />
-                    My Active Client Events & Projects
+                    My Active Client Functions & Projects
                   </h3>
                   <p className="text-xs text-slate-500 mt-1">
                     Confirmed client shoots where you are involved as crew or lead editor.
@@ -562,28 +605,28 @@ const Dashboard: React.FC<DashboardProps> = ({
 
           {/* TWO-COLUMN COMPACT LAYOUT: UPCOMING EVENTS & DUE WORK */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* COLUMN 1: Upcoming Shoot Events */}
+            {/* COLUMN 1: Upcoming Shoot Functions */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
                     <Calendar className="text-indigo-600 shrink-0" size={20} />
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900">Upcoming Shoot Events (Next 5 Days)</h3>
-                      <p className="text-[11px] text-slate-400">Scheduled client wedding & event shoots in the next 5 days</p>
+                      <h3 className="text-base font-extrabold text-slate-900">Upcoming Shoot Functions (Next 5 Days)</h3>
+                      <p className="text-[11px] text-slate-400">Scheduled client wedding & function shoots in the next 5 days</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-extrabold text-[11px] rounded-lg border border-indigo-100">
-                      {upcomingEvents.length} Event(s)
+                      {upcomingEvents.length} Function(s)
                     </span>
                     {onNewClient && (
                       <button
                         onClick={onNewClient}
                         className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-1"
                       >
-                        <Plus size={12} /> Add Event
+                        <Plus size={12} /> Add Function
                       </button>
                     )}
                   </div>
@@ -592,9 +635,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {upcomingEvents.length === 0 ? (
                   <div className="py-12 text-center bg-slate-50/80 rounded-2xl border border-dashed border-slate-200 space-y-2">
                     <Calendar size={32} className="mx-auto text-slate-300" />
-                    <p className="font-bold text-slate-700 text-xs">No upcoming events scheduled</p>
+                    <p className="font-bold text-slate-700 text-xs">No upcoming functions scheduled</p>
                     <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
-                      Events added in Client CRM will appear here automatically with venue & date info.
+                      Functions added in Client CRM will appear here automatically with venue & date info.
                     </p>
                   </div>
                 ) : (

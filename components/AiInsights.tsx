@@ -79,7 +79,9 @@ const AiInsights: React.FC<AiInsightsProps> = ({ employees }) => {
         <div className="space-y-4">
           <h4 className="font-bold text-slate-800 px-2">Individual Performance Reviews</h4>
           <div className="space-y-3">
-            {employees.map(e => (
+            {employees
+              .filter(e => e.status !== 'Terminated' && (e as any).status !== 'Archived')
+              .map(e => (
               <div key={e.id} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-200 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">

@@ -31,11 +31,8 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
   const [filterDept, setFilterDept] = useState<string>('All');
 
   const activeEmployees = employees.filter(e => e.status !== 'Terminated' && (e as any).status !== 'Archived');
-  const archivedEmployees = employees.filter(e => e.status === 'Terminated' || (e as any).status === 'Archived');
 
-  const currentList = activeTab === 'active' ? activeEmployees : archivedEmployees;
-
-  const filtered = currentList.filter(e => {
+  const filtered = activeEmployees.filter(e => {
     const matchesSearch = e.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          e.role.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDept = filterDept === 'All' || e.department === filterDept;
@@ -49,36 +46,12 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden space-y-0">
-      {/* Top Bar with Search & Tab Selection */}
+      {/* Top Bar with Search & Filters */}
       <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="flex items-center gap-3 w-full md:w-auto">
-          {/* Active vs Archived Crew Tab Toggle */}
-          <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold shrink-0">
-            <button
-              type="button"
-              onClick={() => setActiveTab('active')}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-                activeTab === 'active' 
-                  ? 'bg-white text-indigo-700 shadow-2xs font-extrabold' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Users size={14} />
-              <span>Active Crew ({activeEmployees.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('archived')}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-                activeTab === 'archived' 
-                  ? 'bg-white text-amber-800 shadow-2xs font-extrabold' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Archive size={14} />
-              <span>Archived Staff ({archivedEmployees.length})</span>
-            </button>
+          <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-700 shrink-0">
+            <Users size={15} />
+            <span>Active Team Members ({activeEmployees.length})</span>
           </div>
 
           <div className="relative w-full md:w-64 hidden sm:block">
@@ -266,27 +239,23 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
 
               <div>
                 <h3 className="text-lg font-bold text-slate-900">
-                  {activeTab === 'archived' ? 'No Archived Staff' : 'No Team Members Found'}
+                  No Team Members Found
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  {activeTab === 'archived'
-                    ? 'There are no archived or terminated employees in your records.'
-                    : searchTerm || filterDept !== 'All' 
+                  {searchTerm || filterDept !== 'All' 
                     ? `No employees match "${searchTerm}" in the "${filterDept}" department. Try adjusting or clearing your filters.`
                     : 'Your employee directory is empty. Start onboarding team members to assign project tasks.'}
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                {activeTab === 'active' && (
-                  <button
-                    onClick={() => onEdit(null)}
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
-                  >
-                    <UserPlus size={16} />
-                    Add New Employee
-                  </button>
-                )}
+                <button
+                  onClick={() => onEdit(null)}
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
+                >
+                  <UserPlus size={16} />
+                  Add New Employee
+                </button>
 
                 {(searchTerm || filterDept !== 'All') && (
                   <button

@@ -59,6 +59,11 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSubmit, in
     setFormData(prev => ({ ...prev, events: [...(prev.events || []), newEvent] }));
   };
 
+  const STANDARD_FUNCTION_TYPES = [
+    'Wedding', 'Engagement', 'Save the Date', 'Pre-Wedding Shoot', 
+    'Reception', 'Haldi', 'Sangeet', 'Mehendi'
+  ];
+
   const removeEvent = (id: string) => {
     setFormData(prev => ({ ...prev, events: prev.events?.filter(e => e.id !== id) }));
   };
@@ -186,6 +191,32 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSubmit, in
                   <option value="Completed">Completed</option>
                 </select>
               </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-slate-700 flex items-center gap-1 text-pink-700">
+                  <span>👰 Bride Instagram Handle / Link</span>
+                </label>
+                <input 
+                  type="text"
+                  placeholder="e.g. @sneha_bride or instagram.com/sneha"
+                  className="w-full px-4 py-2 bg-pink-50/50 border border-pink-200 rounded-xl focus:ring-2 focus:ring-pink-500/20 outline-none text-xs font-semibold text-slate-800"
+                  value={formData.brideInstagram || ''}
+                  onChange={e => setFormData({...formData, brideInstagram: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-slate-700 flex items-center gap-1 text-indigo-700">
+                  <span>🤵 Groom Instagram Handle / Link</span>
+                </label>
+                <input 
+                  type="text"
+                  placeholder="e.g. @rahul_groom or instagram.com/rahul"
+                  className="w-full px-4 py-2 bg-indigo-50/50 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 outline-none text-xs font-semibold text-slate-800"
+                  value={formData.groomInstagram || ''}
+                  onChange={e => setFormData({...formData, groomInstagram: e.target.value})}
+                />
+              </div>
             </div>
           </div>
 
@@ -260,87 +291,115 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSubmit, in
             </div>
 
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">Scheduled Events & Dates</h3>
+              <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">Scheduled Functions & Dates</h3>
               <button 
                 type="button" 
                 onClick={addEvent}
                 className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700"
               >
-                <Plus size={14} /> Add Event
+                <Plus size={14} /> Add Function
               </button>
             </div>
             
             <div className="space-y-4">
-              {formData.events?.map((ev, index) => (
-                <div key={ev.id} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl relative group">
-                  <button 
-                    type="button"
-                    onClick={() => removeEvent(ev.id)}
-                    className="absolute -top-2 -right-2 p-1.5 bg-red-100 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase">Event Type</label>
-                      <select 
-                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm"
-                        value={ev.type}
-                        onChange={e => updateEvent(ev.id, 'type', e.target.value)}
-                      >
-                        <option value="Wedding">Wedding</option>
-                        <option value="Engagement">Engagement</option>
-                        <option value="Save the Date">Save the Date</option>
-                        <option value="Pre-Wedding Shoot">Pre-Wedding Shoot</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase">Side Work Scope</label>
-                      <select 
-                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700"
-                        value={ev.sideType || 'Both'}
-                        onChange={e => updateEvent(ev.id, 'sideType', e.target.value)}
-                      >
-                        <option value="Both">Bride & Groom (Both Sides)</option>
-                        <option value="Single">Single Side Work</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase">Event Date</label>
-                      <input 
-                        type="date"
-                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm"
-                        value={ev.date}
-                        onChange={e => updateEvent(ev.id, 'date', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-indigo-700 uppercase flex items-center gap-1">
-                        <MapPin size={12} className="text-indigo-600 shrink-0" />
-                        <span>Venue Location / Address *</span>
-                      </label>
-                      <input 
-                        required
-                        placeholder="e.g. Leela Palace, Udaipur / Grand Ballroom"
-                        className="w-full px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                        value={ev.venue}
-                        onChange={e => updateEvent(ev.id, 'venue', e.target.value)}
-                      />
-                    </div>
-                    <div className="md:col-span-4 space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase">Specific Details / Notes</label>
-                      <input 
-                        placeholder="e.g. Sangeet themes, Christian choir requirements, etc."
-                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm"
-                        value={ev.notes}
-                        onChange={e => updateEvent(ev.id, 'notes', e.target.value)}
-                      />
+              {formData.events?.map((ev, index) => {
+                const isStandardType = STANDARD_FUNCTION_TYPES.includes(ev.type);
+                const selectedSelectValue = isStandardType ? ev.type : 'Other';
+
+                return (
+                  <div key={ev.id} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl relative group">
+                    <button 
+                      type="button"
+                      onClick={() => removeEvent(ev.id)}
+                      className="absolute -top-2 -right-2 p-1.5 bg-red-100 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Function Type</label>
+                        <select 
+                          className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold"
+                          value={selectedSelectValue}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (val === 'Other') {
+                              updateEvent(ev.id, 'type', 'Other');
+                            } else {
+                              updateEvent(ev.id, 'type', val);
+                            }
+                          }}
+                        >
+                          <option value="Wedding">Wedding</option>
+                          <option value="Engagement">Engagement</option>
+                          <option value="Save the Date">Save the Date</option>
+                          <option value="Pre-Wedding Shoot">Pre-Wedding Shoot</option>
+                          <option value="Reception">Reception</option>
+                          <option value="Haldi">Haldi</option>
+                          <option value="Sangeet">Sangeet</option>
+                          <option value="Mehendi">Mehendi</option>
+                          <option value="Other">Other (Custom Function)</option>
+                        </select>
+
+                        {selectedSelectValue === 'Other' && (
+                          <div className="mt-1.5">
+                            <input 
+                              type="text"
+                              placeholder="Type custom function name..."
+                              className="w-full px-3 py-1.5 bg-indigo-50/70 border border-indigo-200 rounded-lg text-xs font-semibold text-indigo-950 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                              value={ev.type === 'Other' ? '' : ev.type}
+                              onChange={e => updateEvent(ev.id, 'type', e.target.value || 'Other')}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Side Work Scope</label>
+                        <select 
+                          className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700"
+                          value={ev.sideType || 'Both'}
+                          onChange={e => updateEvent(ev.id, 'sideType', e.target.value)}
+                        >
+                          <option value="Both">Bride & Groom (Both Sides)</option>
+                          <option value="Single">Single Side Work</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Function Date</label>
+                        <input 
+                          type="date"
+                          className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm"
+                          value={ev.date}
+                          onChange={e => updateEvent(ev.id, 'date', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-extrabold text-indigo-700 uppercase flex items-center gap-1">
+                          <MapPin size={12} className="text-indigo-600 shrink-0" />
+                          <span>Venue Location / Address *</span>
+                        </label>
+                        <input 
+                          required
+                          placeholder="e.g. Leela Palace, Udaipur / Grand Ballroom"
+                          className="w-full px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                          value={ev.venue}
+                          onChange={e => updateEvent(ev.id, 'venue', e.target.value)}
+                        />
+                      </div>
+                      <div className="md:col-span-4 space-y-1">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Specific Details / Notes</label>
+                        <input 
+                          placeholder="e.g. Sangeet themes, Christian choir requirements, etc."
+                          className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm"
+                          value={ev.notes}
+                          onChange={e => updateEvent(ev.id, 'notes', e.target.value)}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           

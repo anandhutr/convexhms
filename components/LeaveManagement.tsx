@@ -423,9 +423,11 @@ export const LeaveManagement: React.FC<LeaveManagementProps> = ({
                 className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               >
                 <option value="all">All Employees</option>
-                {employees.map(emp => (
-                  <option key={emp.id} value={emp.id}>{emp.name}</option>
-                ))}
+                {employees
+                  .filter(emp => emp.status !== 'Terminated' && (emp as any).status !== 'Archived')
+                  .map(emp => (
+                    <option key={emp.id} value={emp.id}>{emp.name}</option>
+                  ))}
               </select>
             )}
 
@@ -802,7 +804,7 @@ export const LeaveManagement: React.FC<LeaveManagementProps> = ({
                 <textarea
                   required
                   rows={3}
-                  placeholder="Explain reason for leave (e.g. personal emergency, medical appointment, wedding event)..."
+                  placeholder="Explain reason for leave (e.g. personal emergency, medical appointment, wedding function)..."
                   value={formData.reason}
                   onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"

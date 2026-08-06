@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { Assignment, Employee, Client, AssignmentStatus } from '../types';
+import { Assignment, Employee, Client, AssignmentStatus, TaskComment, TaskExpense } from '../types';
 import { 
   Calendar, CheckCircle2, Clock, AlertCircle, 
   ChevronRight, ChevronDown, ChevronUp, User, Filter, ClipboardList,
   Contact2, ExternalLink, Edit2, Trash2, Plus, RotateCcw,
-  LayoutGrid, Layers, Building2, CheckSquare
+  LayoutGrid, Layers, Building2, CheckSquare, MessageSquare, Send, ShieldAlert, Receipt
 } from 'lucide-react';
 import { ExpandableDueNotifications } from './DueNotificationsBanner';
 import TaskProgressBar from './TaskProgressBar';
+import { saveAssignmentToFirestore, saveNotificationToFirestore } from '../services/firestoreService';
 
 interface AssignmentsProps {
   assignments: Assignment[];
   employees: Employee[];
   clients?: Client[];
+  expenses?: TaskExpense[];
   dismissedNotifications?: string[];
   currentRoleId?: string;
   onDismissNotification?: (id: string) => void;
@@ -23,12 +25,14 @@ interface AssignmentsProps {
   onEdit: (assignment: Assignment) => void;
   onDelete: (id: string) => void;
   onNewTask?: (clientId?: string) => void;
+  onViewExpenses?: () => void;
 }
 
 const Assignments: React.FC<AssignmentsProps> = ({ 
   assignments, 
   employees, 
   clients = [],
+  expenses = [],
   dismissedNotifications = [],
   currentRoleId = 'admin',
   onDismissNotification,
@@ -38,16 +42,21 @@ const Assignments: React.FC<AssignmentsProps> = ({
   onToggleSubtask,
   onEdit, 
   onDelete,
-  onNewTask
+  onNewTask,
+  onViewExpenses,
 }) => {
   const [viewMode, setViewMode] = useState<'grouped' | 'individual'>('grouped');
   const [filterStatus, setFilterStatus] = useState<string>('All');
   const [filterClient, setFilterClient] = useState<string>('All');
-  const [filterAssignee, setFilterAssignee] = useState<string>(
-    currentRoleId !== 'admin' ? currentRoleId : 'All'
-  );
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const [requestNotice, setRequestNotice] = useState<string | null>(null);
 
   const currentEmployee = employees.find(e => e.id === currentRoleId);
+  const isAdmin = currentRoleId === 'admin' || currentEmployee?.accessLevel === 'admin';
+
+  const [filterAssignee, setFilterAssignee] = useState<string>(
+    !isAdmin && currentRoleId ? currentRoleId : 'All'
+  );
 
   const getAssignee = (id: string) => employees.find(e => e.id === id);
   const getClient = (id?: string) => clients.find(c => c.id === id);
@@ -56,6 +65,102 @@ const Assignments: React.FC<AssignmentsProps> = ({
     setFilterStatus('All');
     setFilterClient('All');
     setFilterAssignee('All');
+  };
+
+  const handleEditRequest = (task: Assignment) => {
+    if (isAdmin) {
+      onEdit(task);
+      return;
+    }
+
+    // Trigger Admin Notification
+    saveNotificationToFirestore({
+      id: Math.random().toString(36).substr(2, 9),
+      type: 'edit_request',
+      title: 'Task Edit Approval Needed',
+      message: `${currentEmployee?.name || 'An employee'} requested permission to edit task "${task.title}".`,
+      targetId: task.id,
+      targetType: 'assignment',
+      requestedBy: {
+        id: currentEmployee?.id || 'emp',
+        name: currentEmployee?.name || 'Employee',
+        role: currentEmployee?.role || 'Staff'
+      },
+      createdAt: new Date().toISOString(),
+      status: 'pending'
+    });
+
+    setRequestNotice(`Admin notification sent! Requested permission to edit task "${task.title}".`);
+    setTimeout(() => setRequestNotice(null), 5000);
+  };
+
+  const handleDeleteRequest = (task: Assignment) => {
+    if (isAdmin) {
+      onDelete(task.id);
+      return;
+    }
+
+    // Trigger Admin Notification
+    saveNotificationToFirestore({
+      id: Math.random().toString(36).substr(2, 9),
+      type: 'delete_request',
+      title: 'Task Delete Approval Needed',
+      message: `${currentEmployee?.name || 'An employee'} requested to delete task "${task.title}".`,
+      targetId: task.id,
+      targetType: 'assignment',
+      requestedBy: {
+        id: currentEmployee?.id || 'emp',
+        name: currentEmployee?.name || 'Employee',
+        role: currentEmployee?.role || 'Staff'
+      },
+      createdAt: new Date().toISOString(),
+      status: 'pending'
+    });
+
+    setRequestNotice(`Admin notification sent! Requested admin approval to delete task "${task.title}".`);
+    setTimeout(() => setRequestNotice(null), 5000);
+  };
+
+  const handleAddComment = (task: Assignment) => {
+    const text = commentInputs[task.id]?.trim();
+    if (!text) return;
+
+    const newComment: TaskComment = {
+      id: Math.random().toString(36).substr(2, 9),
+      assignmentId: task.id,
+      authorId: currentEmployee?.id || 'admin',
+      authorName: currentEmployee?.name || 'Studio Admin',
+      authorRole: currentEmployee?.role || 'Management',
+      text,
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedTask: Assignment = {
+      ...task,
+      comments: [...(task.comments || []), newComment],
+      updatedAt: new Date().toISOString()
+    };
+
+    saveAssignmentToFirestore(updatedTask);
+
+    // Trigger notification
+    saveNotificationToFirestore({
+      id: Math.random().toString(36).substr(2, 9),
+      type: 'comment_added',
+      title: 'New Review Comment',
+      message: `${newComment.authorName} commented on "${task.title}": "${text.substring(0, 40)}${text.length > 40 ? '...' : ''}"`,
+      targetId: task.id,
+      targetType: 'assignment',
+      requestedBy: {
+        id: newComment.authorId,
+        name: newComment.authorName,
+        role: newComment.authorRole || 'Staff'
+      },
+      createdAt: new Date().toISOString(),
+      status: 'pending'
+    });
+
+    setCommentInputs(prev => ({ ...prev, [task.id]: '' }));
   };
 
   const priorityColors = {
@@ -76,8 +181,19 @@ const Assignments: React.FC<AssignmentsProps> = ({
     const matchesStatus = filterStatus === 'All' || a.status === filterStatus;
     const matchesClient = filterClient === 'All' || 
       (filterClient === 'Internal' ? !a.clientId : a.clientId === filterClient);
-    const matchesAssignee = filterAssignee === 'All' || a.assigneeId === filterAssignee;
-    return matchesStatus && matchesClient && matchesAssignee;
+    
+    // Non-admin employee strictly sees ONLY tasks tagged to them
+    if (!isAdmin) {
+      if (a.assigneeId !== currentRoleId && a.assigneeId !== currentEmployee?.id) {
+        return false;
+      }
+    } else {
+      if (filterAssignee !== 'All' && a.assigneeId !== filterAssignee) {
+        return false;
+      }
+    }
+
+    return matchesStatus && matchesClient;
   });
 
   // Group filtered tasks by Client ID (or 'internal')
@@ -113,6 +229,14 @@ const Assignments: React.FC<AssignmentsProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Request Approval Banner */}
+      {requestNotice && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-bold flex items-center gap-2 animate-in fade-in duration-200">
+          <ShieldAlert size={16} className="text-amber-600 shrink-0" />
+          <span>{requestNotice}</span>
+        </div>
+      )}
+
       {/* Compact View Controls & Filter Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs">
         <div className="flex flex-wrap items-center gap-2">
@@ -167,39 +291,52 @@ const Assignments: React.FC<AssignmentsProps> = ({
           {/* Quick Filter Pill for Logged In Employee */}
           {currentEmployee && (
             <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold shrink-0">
-              <button
-                type="button"
-                onClick={() => setFilterAssignee(currentEmployee.id)}
-                className={`px-3 py-1 rounded-lg transition-all ${filterAssignee === currentEmployee.id ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}`}
-              >
-                👤 My Tasks ({assignments.filter(a => a.assigneeId === currentEmployee.id).length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterAssignee('All')}
-                className={`px-3 py-1 rounded-lg transition-all ${filterAssignee === 'All' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}`}
-              >
-                🌐 All Studio Work
-              </button>
+              {isAdmin ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setFilterAssignee(currentEmployee.id)}
+                    className={`px-3 py-1 rounded-lg transition-all ${filterAssignee === currentEmployee.id ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    👤 My Tasks ({assignments.filter(a => a.assigneeId === currentEmployee.id).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFilterAssignee('All')}
+                    className={`px-3 py-1 rounded-lg transition-all ${filterAssignee === 'All' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    🌐 All Studio Work
+                  </button>
+                </>
+              ) : (
+                <div className="px-3 py-1 bg-indigo-600 text-white rounded-lg font-bold flex items-center gap-1.5 shadow-2xs">
+                  <User size={13} />
+                  <span>Tasks Tagged to Me ({filtered.length})</span>
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1.5">
-            <Filter className="text-slate-400" size={15} />
-            <select
-              className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-              value={filterAssignee}
-              onChange={(e) => setFilterAssignee(e.target.value)}
-            >
-              <option value="All">All Assignees</option>
-              {employees.map(e => (
-                <option key={e.id} value={e.id}>👤 {e.name} ({e.role})</option>
-              ))}
-            </select>
-          </div>
+          {isAdmin && (
+            <div className="flex items-center gap-1.5">
+              <Filter className="text-slate-400" size={15} />
+              <select
+                className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                value={filterAssignee}
+                onChange={(e) => setFilterAssignee(e.target.value)}
+              >
+                <option value="All">All Assignees</option>
+                {employees
+                  .filter(e => e.status !== 'Terminated' && (e as any).status !== 'Archived')
+                  .map(e => (
+                    <option key={e.id} value={e.id}>👤 {e.name} ({e.role})</option>
+                  ))}
+              </select>
+            </div>
+          )}
 
           <select
             className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -424,14 +561,14 @@ const Assignments: React.FC<AssignmentsProps> = ({
 
                               <div className="flex items-center gap-1 border-l border-slate-200 pl-2">
                                 <button 
-                                  onClick={() => onEdit(task)} 
+                                  onClick={() => handleEditRequest(task)} 
                                   className="p-1 text-slate-400 hover:text-slate-700 rounded hover:bg-slate-100"
                                   title="Edit Task"
                                 >
                                   <Edit2 size={13} />
                                 </button>
                                 <button 
-                                  onClick={() => onDelete(task.id)} 
+                                  onClick={() => handleDeleteRequest(task)} 
                                   className="p-1 text-slate-400 hover:text-red-600 rounded hover:bg-red-50"
                                   title="Delete Task"
                                 >
@@ -441,9 +578,23 @@ const Assignments: React.FC<AssignmentsProps> = ({
                             </div>
                           </div>
 
-                          {/* Expandable Task Detail Box (Description & Interactive Subtasks) */}
+                          {/* Expandable Task Detail Box (Description, Metadata, Subtasks, Comments) */}
                           {isDetailExpanded && (
-                            <div className="mt-2.5 pt-2.5 border-t border-slate-100 pl-6 space-y-2.5 text-xs text-slate-600 animate-in fade-in duration-200">
+                            <div className="mt-2.5 pt-2.5 border-t border-slate-100 pl-6 space-y-3 text-xs text-slate-600 animate-in fade-in duration-200">
+                              {/* Task Metadata Dates */}
+                              <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100 font-medium">
+                                <div>
+                                  <span className="font-bold text-slate-700">Created: </span>
+                                  <span>{task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</span>
+                                </div>
+                                {task.updatedAt && (
+                                  <div>
+                                    <span className="font-bold text-slate-700">Modified: </span>
+                                    <span>{new Date(task.updatedAt).toLocaleString()}</span>
+                                  </div>
+                                )}
+                              </div>
+
                               {task.description && (
                                 <p className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 leading-relaxed text-slate-700">
                                   {task.description}
@@ -451,6 +602,96 @@ const Assignments: React.FC<AssignmentsProps> = ({
                               )}
 
                               <TaskProgressBar task={task} onToggleSubtask={onToggleSubtask} />
+
+                              {/* Work Expenses Section for this Task */}
+                              {(() => {
+                                const taskExpenses = expenses.filter(e => e.assignmentId === task.id);
+                                const totalTaskExp = taskExpenses.reduce((sum, e) => sum + e.amount, 0);
+                                return (
+                                  <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                        <Receipt size={14} className="text-amber-600" />
+                                        <span>Logged Work Expenses ({taskExpenses.length})</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs font-black text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg">
+                                          Total: ₹{totalTaskExp.toLocaleString()}
+                                        </span>
+                                        {onViewExpenses && (
+                                          <button
+                                            type="button"
+                                            onClick={onViewExpenses}
+                                            className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline"
+                                          >
+                                            Log / Manage Expenses →
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {taskExpenses.length > 0 ? (
+                                      <div className="space-y-1.5">
+                                        {taskExpenses.map(exp => (
+                                          <div key={exp.id} className="p-2 bg-slate-50 rounded-lg border border-slate-200/60 flex items-center justify-between text-xs">
+                                            <div>
+                                              <span className="font-bold text-slate-800">{exp.title}</span>
+                                              <span className="ml-2 text-[10px] text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded font-semibold">{exp.category}</span>
+                                            </div>
+                                            <span className="font-black text-slate-900">₹{exp.amount.toLocaleString()}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p className="text-[11px] text-slate-400 italic">No expenses logged for this task yet.</p>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Task Review Comments */}
+                              <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                  <MessageSquare size={14} className="text-indigo-600" />
+                                  <span>Task Review Comments ({(task.comments || []).length})</span>
+                                </div>
+
+                                <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                                  {(task.comments || []).length === 0 ? (
+                                    <p className="text-[11px] text-slate-400 italic">No review comments yet. Add feedback below.</p>
+                                  ) : (
+                                    (task.comments || []).map(comment => (
+                                      <div key={comment.id} className="bg-slate-50 p-2 rounded-lg border border-slate-200/60 text-xs">
+                                        <div className="flex items-center justify-between font-bold text-slate-700 text-[11px] mb-0.5">
+                                          <span>{comment.authorName} ({comment.authorRole || 'Staff'})</span>
+                                          <span className="text-[10px] text-slate-400 font-normal">{new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <p className="text-slate-600 leading-normal">{comment.text}</p>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+
+                                {/* Add Comment Input */}
+                                <div className="flex items-center gap-2 pt-1">
+                                  <input 
+                                    type="text"
+                                    placeholder="Write a review comment..."
+                                    value={commentInputs[task.id] || ''}
+                                    onChange={(e) => setCommentInputs(prev => ({ ...prev, [task.id]: e.target.value }))}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(task); }}
+                                    className="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddComment(task)}
+                                    className="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-xs font-bold"
+                                    title="Post Comment"
+                                  >
+                                    <Send size={12} />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -541,18 +782,60 @@ const Assignments: React.FC<AssignmentsProps> = ({
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
-                        onClick={() => onEdit(task)}
+                        onClick={() => handleEditRequest(task)}
                         className="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded transition-colors"
                         title="Edit task"
                       >
                         <Edit2 size={14} />
                       </button>
                       <button 
-                        onClick={() => onDelete(task.id)}
+                        onClick={() => handleDeleteRequest(task)}
                         className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded transition-colors"
                         title="Delete task"
                       >
                         <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Footer Metadata & Review Comments */}
+                <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] space-y-2">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span>Created: {task.createdAt ? new Date(task.createdAt).toLocaleDateString() : 'N/A'}</span>
+                    {task.updatedAt && <span>Updated: {new Date(task.updatedAt).toLocaleDateString()}</span>}
+                  </div>
+
+                  {/* Quick Comment count or add comment */}
+                  <div className="pt-1 border-t border-slate-50">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                      <MessageSquare size={13} className="text-indigo-600" />
+                      <span>Comments ({(task.comments || []).length})</span>
+                    </div>
+
+                    {(task.comments || []).slice(-2).map(comment => (
+                      <div key={comment.id} className="bg-slate-50 p-1.5 rounded text-[11px] my-1 text-slate-600">
+                        <span className="font-bold text-slate-700">{comment.authorName}: </span>
+                        <span>{comment.text}</span>
+                      </div>
+                    ))}
+
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <input 
+                        type="text"
+                        placeholder="Write a review comment..."
+                        value={commentInputs[task.id] || ''}
+                        onChange={(e) => setCommentInputs(prev => ({ ...prev, [task.id]: e.target.value }))}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(task); }}
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded px-2 py-0.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAddComment(task)}
+                        className="p-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition-colors text-[10px] font-bold"
+                        title="Post Comment"
+                      >
+                        <Send size={11} />
                       </button>
                     </div>
                   </div>

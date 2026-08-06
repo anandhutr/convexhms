@@ -19,12 +19,16 @@ export const signInWithGoogle = async (): Promise<{ user: User | null; error?: s
     return { user: result.user };
   } catch (err: any) {
     console.error('Google Sign In Error:', err);
-    let msg = err?.message || 'Google sign-in failed';
-    if (err?.code === 'auth/unauthorized-domain') {
-      const currentDomain = typeof window !== 'undefined' ? window.location.hostname : 'your Vercel domain';
-      msg = `Firebase Auth Error: Domain "${currentDomain}" is not authorized. Please add "${currentDomain}" to your Firebase Console under Authentication -> Settings -> Authorized Domains.`;
+    
+    if (err?.code === 'auth/unauthorized-domain' || err?.message?.includes('unauthorized-domain')) {
+      const domain = window.location.hostname;
+      return { 
+        user: null, 
+        error: `Domain "${domain}" is not authorized in Firebase Auth.\n\nTo enable Google Sign-In on Vercel/Custom Domain:\n1. Open Firebase Console (https://console.firebase.google.com)\n2. Go to project "convex-hrms" -> Authentication -> Settings -> Authorized domains\n3. Click "Add domain" and add "${domain}"\n\nIn the meantime, you can log in below using Passcode Login (Select Admin Director & enter "admin123").` 
+      };
     }
-    return { user: null, error: msg };
+    
+    return { user: null, error: err?.message || 'Google sign-in failed' };
   }
 };
 

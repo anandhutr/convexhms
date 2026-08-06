@@ -1,10 +1,10 @@
 import React from 'react';
-import { LayoutDashboard, Users, BrainCircuit, ClipboardList, Contact2, LogOut, UserCheck, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, BrainCircuit, ClipboardList, Contact2, LogOut, UserCheck, Calendar, Receipt } from 'lucide-react';
 import { Employee } from '../types';
 
 interface SidebarProps {
   currentView: string;
-  setView: (view: 'dashboard' | 'directory' | 'ai-insights' | 'assignments' | 'clients' | 'leaves') => void;
+  setView: (view: 'dashboard' | 'directory' | 'ai-insights' | 'assignments' | 'clients' | 'leaves' | 'expenses') => void;
   currentRoleId?: string;
   employees?: Employee[];
   onLogout?: () => void;
@@ -24,11 +24,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'assignments', label: 'Work Tracking', icon: ClipboardList },
-    { id: 'leaves', label: 'Leave Management', icon: Calendar },
     { id: 'clients', label: 'Clients', icon: Contact2, adminOnly: true },
+    { id: 'assignments', label: 'Work Tracking', icon: ClipboardList },
+    { id: 'expenses', label: 'Work Expenses', icon: Receipt },
+    { id: 'leaves', label: 'Leave Management', icon: Calendar },
+    { id: 'directory', label: 'Employee Management', icon: Users, adminOnly: true },
     { id: 'ai-insights', label: 'AI Strategy Hub', icon: BrainCircuit },
-    { id: 'directory', label: 'Employee Directory', icon: Users, adminOnly: true },
   ].filter(item => isAdmin || !item.adminOnly);
 
   return (

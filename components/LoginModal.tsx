@@ -150,11 +150,13 @@ const LoginModal: React.FC<LoginProps> = ({
                 >
                   <option value="admin">👑 Studio Operations Director (Admin)</option>
                   <optgroup label="Employee Accounts">
-                    {employees.map(emp => (
-                      <option key={emp.id} value={emp.id}>
-                        👤 {emp.name} — {emp.role} ({emp.department})
-                      </option>
-                    ))}
+                    {employees
+                      .filter(emp => emp.status !== 'Terminated' && (emp as any).status !== 'Archived')
+                      .map(emp => (
+                        <option key={emp.id} value={emp.id}>
+                          {emp.accessLevel === 'admin' ? '👑 [Admin] ' : '👤 '}{emp.name} — {emp.role} ({emp.department})
+                        </option>
+                      ))}
                   </optgroup>
                 </select>
               </div>
@@ -183,7 +185,7 @@ const LoginModal: React.FC<LoginProps> = ({
             {errorMsg && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-start gap-2">
                 <ShieldAlert size={16} className="shrink-0 text-red-500 mt-0.5" />
-                <span>{errorMsg}</span>
+                <span className="whitespace-pre-line">{errorMsg}</span>
               </div>
             )}
 
