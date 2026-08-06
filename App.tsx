@@ -157,7 +157,20 @@ const App: React.FC = () => {
 
     const unsubEmployees = subscribeEmployees(firestoreEmployees => {
       if (firestoreEmployees.length > 0) {
-        const sanitized = firestoreEmployees.map(emp => {
+        const namesToRemove = ['arjun mehta', 'sarah khan', 'vikram singh', 'priya sharma', 'sarah jenkins', 'vikram verma'];
+
+        // Purge from Firestore DB
+        firestoreEmployees.forEach(emp => {
+          if (namesToRemove.includes(emp.name.toLowerCase().trim()) || ['1', '2', '3', '4'].includes(emp.id)) {
+            deleteEmployeeFromFirestore(emp.id);
+          }
+        });
+
+        const activeList = firestoreEmployees.filter(emp => 
+          !namesToRemove.includes(emp.name.toLowerCase().trim()) && !['1', '2', '3', '4'].includes(emp.id)
+        );
+
+        const sanitized = activeList.map(emp => {
           let dept: Department = emp.department;
           if ((dept as string) === 'Production' || (dept as string) === 'Photography & Editing' || (dept as string) === 'Studio Operations Crew') {
             dept = 'Video Editor';
@@ -170,6 +183,7 @@ const App: React.FC = () => {
           }
           return { ...emp, department: dept };
         });
+
         setEmployees(sanitized);
       }
     });

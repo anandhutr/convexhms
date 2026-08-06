@@ -3,54 +3,6 @@ import { Employee, Client, Assignment } from './types';
 
 export const MOCK_EMPLOYEES: Employee[] = [
   {
-    id: '1',
-    name: 'Arjun Mehta',
-    email: 'arjun.m@convexent.com',
-    role: 'Lead Cinematographer',
-    department: 'Video Editor',
-    salary: 125000,
-    dateJoined: '2022-01-15',
-    status: 'Active',
-    performanceScore: 9.2,
-    bio: 'Award-winning cinematographer with 10 years of experience in feature films.'
-  },
-  {
-    id: '2',
-    name: 'Sarah Khan',
-    email: 'sarah.k@convexent.com',
-    role: 'Senior Editor',
-    department: 'Video Editor',
-    salary: 95000,
-    dateJoined: '2021-06-20',
-    status: 'Active',
-    performanceScore: 8.8,
-    bio: 'Specialist in non-linear editing and color grading.'
-  },
-  {
-    id: '3',
-    name: 'Vikram Singh',
-    email: 'vikram.s@convexent.com',
-    role: 'Creative Director',
-    department: 'Creative Designer',
-    salary: 150000,
-    dateJoined: '2020-03-10',
-    status: 'Active',
-    performanceScore: 9.5,
-    bio: 'Visionary leader driving the artistic direction of Convex Entertainments.'
-  },
-  {
-    id: '4',
-    name: 'Priya Sharma',
-    email: 'priya.s@convexent.com',
-    role: 'HR Manager',
-    department: 'HR',
-    salary: 85000,
-    dateJoined: '2022-11-01',
-    status: 'Active',
-    performanceScore: 8.5,
-    bio: 'Expert in talent acquisition and employee engagement.'
-  },
-  {
     id: '5',
     name: 'Rajesh Gupte',
     email: 'rajesh.g@convexent.com',
