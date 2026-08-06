@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, BrainCircuit, ClipboardList, Contact2, LogOut, UserCheck, Calendar, Receipt, Sun, Moon, X } from 'lucide-react';
+import { LayoutDashboard, Users, BrainCircuit, ClipboardList, Contact2, LogOut, UserCheck, Calendar, Receipt, X } from 'lucide-react';
 import { Employee } from '../types';
 
 interface SidebarProps {
@@ -10,8 +10,6 @@ interface SidebarProps {
   onSwitchProfile?: () => void;
   onLogout?: () => void;
   onEditMyProfile?: () => void;
-  theme?: 'light' | 'dark';
-  onToggleTheme?: () => void;
   isMobileOpen?: boolean;
   onCloseMobileMenu?: () => void;
 }
@@ -24,8 +22,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSwitchProfile,
   onLogout,
   onEditMyProfile,
-  theme = 'light',
-  onToggleTheme,
   isMobileOpen = false,
   onCloseMobileMenu
 }) => {
@@ -54,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      <aside className={`w-64 bg-slate-900 dark:bg-slate-950 text-slate-300 flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800 shrink-0 z-50 transition-transform duration-300 ${
+      <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800 shrink-0 z-50 transition-transform duration-300 ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         {/* Brand Header & Mobile Close */}
@@ -69,26 +65,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
-            {onToggleTheme && (
-              <button
-                onClick={onToggleTheme}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
-                title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              >
-                {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-indigo-300" />}
-              </button>
-            )}
-
-            {onCloseMobileMenu && (
-              <button 
-                onClick={onCloseMobileMenu}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors lg:hidden"
-              >
-                <X size={18} />
-              </button>
-            )}
-          </div>
+          {onCloseMobileMenu && (
+            <button 
+              onClick={onCloseMobileMenu}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors lg:hidden"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
 
       {/* Navigation Menu */}
