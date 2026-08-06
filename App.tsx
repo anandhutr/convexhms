@@ -154,7 +154,22 @@ const App: React.FC = () => {
     });
 
     const unsubEmployees = subscribeEmployees(firestoreEmployees => {
-      if (firestoreEmployees.length > 0) setEmployees(firestoreEmployees);
+      if (firestoreEmployees.length > 0) {
+        const sanitized = firestoreEmployees.map(emp => {
+          let dept: Department = emp.department;
+          if ((dept as string) === 'Production' || (dept as string) === 'Photography & Editing' || (dept as string) === 'Studio Operations Crew') {
+            dept = 'Video Editor';
+          } else if ((dept as string) === 'Post-Production') {
+            dept = 'Photo Editor';
+          } else if ((dept as string) === 'Creative' || (dept as string) === 'Marketing') {
+            dept = 'Creative Designer';
+          } else if ((dept as string) === 'Finance') {
+            dept = 'Executive Board';
+          }
+          return { ...emp, department: dept };
+        });
+        setEmployees(sanitized);
+      }
     });
 
     const unsubLeaveRequests = subscribeLeaveRequests(requests => {
@@ -203,15 +218,15 @@ const App: React.FC = () => {
   const currentLoggedInEmp = currentRoleId !== 'admin' ? employees.find(e => e.id === currentRoleId) : null;
   const isCurrentAdmin = currentRoleId === 'admin' || currentLoggedInEmp?.accessLevel === 'admin';
 
-  // Restrict access to Directory and Client CRM for non-admin employees
+  // Restrict access to Directory and Expenses for non-admin employees (Clients tab is accessible to all)
   useEffect(() => {
-    if (!isCurrentAdmin && (state.view === 'directory' || state.view === 'clients')) {
+    if (!isCurrentAdmin && (state.view === 'directory' || state.view === 'expenses')) {
       setState(prev => ({ ...prev, view: 'dashboard' }));
     }
   }, [currentRoleId, isCurrentAdmin, state.view]);
 
   const handleSetView = (view: AppState['view']) => {
-    if (!isCurrentAdmin && (view === 'directory' || view === 'clients')) {
+    if (!isCurrentAdmin && (view === 'directory' || view === 'expenses')) {
       return;
     }
     setState(prev => ({ ...prev, view }));

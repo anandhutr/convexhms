@@ -45,6 +45,7 @@ const Assignments: React.FC<AssignmentsProps> = ({
   onNewTask,
   onViewExpenses,
 }) => {
+  const [mainTab, setMainTab] = useState<'assignments' | 'functions'>('assignments');
   const [viewMode, setViewMode] = useState<'grouped' | 'individual'>('grouped');
   const [filterStatus, setFilterStatus] = useState<string>('All');
   const [filterClient, setFilterClient] = useState<string>('All');
@@ -57,6 +58,14 @@ const Assignments: React.FC<AssignmentsProps> = ({
   const [filterAssignee, setFilterAssignee] = useState<string>(
     !isAdmin && currentRoleId ? currentRoleId : 'All'
   );
+
+  // All function events across clients for the Functions tab
+  const allEvents = clients.flatMap(client => 
+    (client.events || []).map(event => ({
+      ...event,
+      client
+    }))
+  ).sort((a, b) => new Date(a.date || '2099-12-31').getTime() - new Date(b.date || '2099-12-31').getTime());
 
   const getAssignee = (id: string) => employees.find(e => e.id === id);
   const getClient = (id?: string) => clients.find(c => c.id === id);
@@ -229,6 +238,52 @@ const Assignments: React.FC<AssignmentsProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Top Module Navigation Tabs */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMainTab('assignments')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+              mainTab === 'assignments'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+            }`}
+          >
+            <ClipboardList size={16} />
+            <span>Work Assignments ({filtered.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMainTab('functions')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+              mainTab === 'functions'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+            }`}
+          >
+            <Calendar size={16} />
+            <span>Functions & Shoot Schedule ({allEvents.length})</span>
+          </button>
+        </div>
+
+        {onNewTask && (
+          <button
+            type="button"
+            onClick={() => {
+              setAssignmentModalClientId(null);
+              setAssignmentModalEventId(null);
+              handleOpenAssignmentModal();
+            }}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm text-xs flex items-center gap-1.5"
+          >
+            <Plus size={16} />
+            <span>New Task Assignment</span>
+          </button>
+        )}
+      </div>
+
       {/* Request Approval Banner */}
       {requestNotice && (
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-bold flex items-center gap-2 animate-in fade-in duration-200">
@@ -237,134 +292,6 @@ const Assignments: React.FC<AssignmentsProps> = ({
         </div>
       )}
 
-      {/* Compact View Controls & Filter Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* View Mode Toggle: Grouped by Client vs Single Cards */}
-          <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold shrink-0">
-            <button
-              type="button"
-              onClick={() => setViewMode('grouped')}
-              className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
-                viewMode === 'grouped' 
-                  ? 'bg-white text-indigo-700 shadow-2xs font-extrabold' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Layers size={14} />
-              <span>Grouped</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('individual')}
-              className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
-                viewMode === 'individual' 
-                  ? 'bg-white text-indigo-700 shadow-2xs font-extrabold' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <LayoutGrid size={14} />
-              <span>Single Cards</span>
-            </button>
-          </div>
-
-          {viewMode === 'grouped' && groupedKeys.length > 0 && (
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold shrink-0">
-              <button
-                type="button"
-                onClick={expandAll}
-                className="px-2.5 py-1 text-slate-700 hover:text-indigo-700 hover:bg-white rounded-lg transition-all"
-              >
-                Expand All
-              </button>
-              <span className="text-slate-300">•</span>
-              <button
-                type="button"
-                onClick={collapseAll}
-                className="px-2.5 py-1 text-slate-700 hover:text-indigo-700 hover:bg-white rounded-lg transition-all"
-              >
-                Collapse All
-              </button>
-            </div>
-          )}
-
-          {/* Quick Filter Pill for Logged In Employee */}
-          {currentEmployee && (
-            <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold shrink-0">
-              {isAdmin ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setFilterAssignee(currentEmployee.id)}
-                    className={`px-3 py-1 rounded-lg transition-all ${filterAssignee === currentEmployee.id ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}`}
-                  >
-                    👤 My Tasks ({assignments.filter(a => a.assigneeId === currentEmployee.id).length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFilterAssignee('All')}
-                    className={`px-3 py-1 rounded-lg transition-all ${filterAssignee === 'All' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}`}
-                  >
-                    🌐 All Studio Work
-                  </button>
-                </>
-              ) : (
-                <div className="px-3 py-1 bg-indigo-600 text-white rounded-lg font-bold flex items-center gap-1.5 shadow-2xs">
-                  <User size={13} />
-                  <span>Tasks Tagged to Me ({filtered.length})</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {isAdmin && (
-            <div className="flex items-center gap-1.5">
-              <Filter className="text-slate-400" size={15} />
-              <select
-                className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                value={filterAssignee}
-                onChange={(e) => setFilterAssignee(e.target.value)}
-              >
-                <option value="All">All Assignees</option>
-                {employees
-                  .filter(e => e.status !== 'Terminated' && (e as any).status !== 'Archived')
-                  .map(e => (
-                    <option key={e.id} value={e.id}>👤 {e.name} ({e.role})</option>
-                  ))}
-              </select>
-            </div>
-          )}
-
-          <select
-            className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            value={filterClient}
-            onChange={(e) => setFilterClient(e.target.value)}
-          >
-            <option value="All">All Client Projects</option>
-            <option value="Internal">Internal Studio Work</option>
-            {clients.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-
-          <select
-            className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="All">All Task Statuses</option>
-            <option value="To Do">To Do</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Review">Review</option>
-            <option value="Done">Done</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Expandable Production Due Work Notifications */}
       {onDismissNotification && onDismissAllNotifications && (
         <ExpandableDueNotifications 
           assignments={assignments}
@@ -483,7 +410,7 @@ const Assignments: React.FC<AssignmentsProps> = ({
                       return (
                         <div key={task.id} className="p-3 hover:bg-slate-50/80 transition-colors">
                           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
-                            {/* Left: Status, Priority, Title & Event */}
+                            {/* Left: Priority, Title & Event */}
                             <div className="flex items-center gap-2.5 min-w-0 flex-1">
                               <button
                                 type="button"
@@ -493,21 +420,6 @@ const Assignments: React.FC<AssignmentsProps> = ({
                               >
                                 {isDetailExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                               </button>
-
-                              {/* Status Select Pill */}
-                              <div className="flex items-center gap-1 text-xs shrink-0">
-                                {statusIcons[task.status]}
-                                <select
-                                  value={task.status}
-                                  onChange={(e) => onUpdateStatus(task.id, e.target.value as AssignmentStatus)}
-                                  className="bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                                >
-                                  <option value="To Do">To Do</option>
-                                  <option value="In Progress">In Progress</option>
-                                  <option value="Review">Review</option>
-                                  <option value="Done">Done</option>
-                                </select>
-                              </div>
 
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${priorityColors[task.priority]}`}>
                                 {task.priority}
@@ -539,37 +451,67 @@ const Assignments: React.FC<AssignmentsProps> = ({
                               )}
                             </div>
 
-                            {/* Right: Assignee, Due Date & Actions */}
-                            <div className="flex items-center justify-between lg:justify-end gap-3 text-xs shrink-0 pl-6 lg:pl-0">
-                              <div className="flex items-center gap-1.5">
-                                <div className="w-5 h-5 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0 text-[9px] font-bold text-slate-600">
+                            {/* Right: Quick Assignee, Due Date, STATUS (at end before actions), Actions */}
+                            <div className="flex flex-wrap items-center justify-between lg:justify-end gap-2.5 text-xs shrink-0 pl-6 lg:pl-0">
+                              {/* Quick Change Assignee */}
+                              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs max-w-[170px]">
+                                <div className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0 text-[9px] font-bold">
                                   {assignee?.profilePicture ? (
                                     <img src={assignee.profilePicture} className="w-full h-full object-cover" alt={assignee.name} />
                                   ) : (
                                     <span>{assignee?.name.charAt(0) || '?'}</span>
                                   )}
                                 </div>
-                                <span className="font-semibold text-slate-700 truncate max-w-[100px]">
-                                  {assignee?.name || 'Unassigned'}
-                                </span>
+                                <select
+                                  value={task.assigneeId}
+                                  disabled={!isAdmin}
+                                  onChange={(e) => {
+                                    const updatedTask = { ...task, assigneeId: e.target.value };
+                                    saveAssignmentToFirestore(updatedTask);
+                                  }}
+                                  className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer max-w-[120px] truncate"
+                                  title="Quick change assignee"
+                                >
+                                  {employees.map(emp => (
+                                    <option key={emp.id} value={emp.id}>
+                                      {emp.name} ({emp.role})
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
 
-                              <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500">
+                              <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-lg shrink-0">
                                 <Calendar size={12} className="text-slate-400" />
-                                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                                <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No date'}</span>
                               </div>
 
+                              {/* STATUS Select Pill (MOVED TO END BEFORE ACTIONS) */}
+                              <div className="flex items-center gap-1 text-xs shrink-0">
+                                {statusIcons[task.status]}
+                                <select
+                                  value={task.status}
+                                  onChange={(e) => onUpdateStatus(task.id, e.target.value as AssignmentStatus)}
+                                  className="bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 px-2 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                                >
+                                  <option value="To Do">To Do</option>
+                                  <option value="In Progress">In Progress</option>
+                                  <option value="Review">Review</option>
+                                  <option value="Done">Done</option>
+                                </select>
+                              </div>
+
+                              {/* Action Buttons */}
                               <div className="flex items-center gap-1 border-l border-slate-200 pl-2">
                                 <button 
                                   onClick={() => handleEditRequest(task)} 
-                                  className="p-1 text-slate-400 hover:text-slate-700 rounded hover:bg-slate-100"
+                                  className="p-1 text-slate-400 hover:text-indigo-600 rounded hover:bg-indigo-50 transition-colors"
                                   title="Edit Task"
                                 >
                                   <Edit2 size={13} />
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteRequest(task)} 
-                                  className="p-1 text-slate-400 hover:text-red-600 rounded hover:bg-red-50"
+                                  className="p-1 text-slate-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"
                                   title="Delete Task"
                                 >
                                   <Trash2 size={13} />

@@ -952,10 +952,10 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase text-slate-500 tracking-wider">
                   <th className="py-3 px-3 w-8 text-center"></th>
-                  <th className="py-3 px-3">Status</th>
                   <th className="py-3 px-4">Task & Priority</th>
-                  <th className="py-3 px-4">Assignee</th>
+                  <th className="py-3 px-4">Assignee (Quick Change)</th>
                   <th className="py-3 px-4">Due Date</th>
+                  <th className="py-3 px-3">Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -979,22 +979,6 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                           >
                             {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                           </button>
-                        </td>
-
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <div className="flex items-center gap-1">
-                            {statusIcons[task.status]}
-                            <select
-                              value={task.status}
-                              onChange={(e) => onUpdateAssignmentStatus(task.id, e.target.value as AssignmentStatus)}
-                              className="bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                            >
-                              <option value="To Do">To Do</option>
-                              <option value="In Progress">In Progress</option>
-                              <option value="Review">Review</option>
-                              <option value="Done">Done</option>
-                            </select>
-                          </div>
                         </td>
 
                         <td className="py-3 px-4">
@@ -1022,18 +1006,30 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                         </td>
 
                         <td className="py-3 px-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0 text-[10px] font-bold text-slate-600">
+                          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs max-w-[170px]">
+                            <div className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0 text-[10px] font-bold">
                               {assignee?.profilePicture ? (
                                 <img src={assignee.profilePicture} className="w-full h-full object-cover" alt={assignee.name} />
                               ) : (
                                 <User size={12} className="text-slate-400" />
                               )}
                             </div>
-                            <div>
-                              <p className="text-xs font-bold text-slate-800 leading-tight">{assignee?.name || 'Unassigned'}</p>
-                              <p className="text-[10px] text-slate-400 leading-tight">{assignee?.role || 'Crew'}</p>
-                            </div>
+                            <select
+                              value={task.assigneeId}
+                              disabled={!isAdmin}
+                              onChange={(e) => {
+                                const updatedTask = { ...task, assigneeId: e.target.value };
+                                saveAssignmentToFirestore(updatedTask);
+                              }}
+                              className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer max-w-[120px] truncate"
+                              title="Quick change assignee"
+                            >
+                              {employees.map(emp => (
+                                <option key={emp.id} value={emp.id}>
+                                  {emp.name} ({emp.role})
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         </td>
 
@@ -1041,6 +1037,22 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                           <div className="flex items-center gap-1.5 text-xs">
                             <Calendar size={13} className="text-slate-400" />
                             <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap">
+                          <div className="flex items-center gap-1">
+                            {statusIcons[task.status]}
+                            <select
+                              value={task.status}
+                              onChange={(e) => onUpdateAssignmentStatus(task.id, e.target.value as AssignmentStatus)}
+                              className="bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                            >
+                              <option value="To Do">To Do</option>
+                              <option value="In Progress">In Progress</option>
+                              <option value="Review">Review</option>
+                              <option value="Done">Done</option>
+                            </select>
                           </div>
                         </td>
 

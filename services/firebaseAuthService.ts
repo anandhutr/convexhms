@@ -105,7 +105,7 @@ export const matchOrCreateEmployeeFromGoogleUser = (
     id: user.uid.substring(0, 10) || Math.random().toString(36).substr(2, 9),
     name: user.displayName || userEmail.split('@')[0],
     email: userEmail,
-    role: 'Studio Operations Crew',
+    role: 'Video Editor',
     department: 'Video Editor',
     salary: 25000,
     dateJoined: new Date().toISOString().split('T')[0],
