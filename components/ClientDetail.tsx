@@ -484,11 +484,6 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               </>
             )}
 
-            {!isAdmin && (
-              <span className="px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-extrabold rounded-xl border border-slate-200">
-                🔒 Staff View-Only (Financials Hidden)
-              </span>
-            )}
           </div>
         </div>
 
@@ -611,12 +606,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               </div>
             )}
           </div>
-        ) : (
-          <div className="mt-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-center text-xs text-slate-500 font-semibold flex items-center justify-center gap-2">
-            <ShieldAlert size={16} className="text-slate-400" />
-            <span>Financial payment details restricted. Employee view-only mode active.</span>
-          </div>
-        )}
+        ) : null}
       </div>
 
       {/* ========================================================= */}
@@ -976,7 +966,13 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
-                {filteredAssignments.map((task) => {
+                {[...filteredAssignments].sort((a, b) => {
+                  if (currentRoleId && currentRoleId !== 'admin') {
+                    if (a.assigneeId === currentRoleId && b.assigneeId !== currentRoleId) return -1;
+                    if (a.assigneeId !== currentRoleId && b.assigneeId === currentRoleId) return 1;
+                  }
+                  return 0;
+                }).map((task) => {
                   const assignee = getAssignee(task.assigneeId);
                   const linkedEvent = client.events.find(e => e.id === task.eventId);
                   const isExpanded = !!expandedTasks[task.id];
