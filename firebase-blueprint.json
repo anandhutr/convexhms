@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Studio client record with events, commercial details, and contact info.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "religion": { "type": "string", "enum": ["Christian", "Hindu", "Muslim", "Others"] },
+        "workScope": { "type": "string", "enum": ["Both", "Single"] },
+        "packageAmount": { "type": "number" },
+        "advancePaid": { "type": "number" },
+        "paymentNotes": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["Lead", "Booked", "Completed"] },
+        "events": { "type": "array" }
+      },
+      "required": ["id", "name", "phone", "status"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Work task assigned to staff member or client event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "assigneeId": { "type": "string" },
+        "status": { "type": "string", "enum": ["To Do", "In Progress", "Review", "Done"] },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Urgent"] },
+        "dueDate": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "clientId": { "type": "string" },
+        "eventId": { "type": "string" },
+        "subtasks": { "type": "array" }
+      },
+      "required": ["id", "title", "assigneeId", "status", "priority"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Studio staff member or crew resource.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "maxLength": 100 },
+        "department": { "type": "string" },
+        "salary": { "type": "number" },
+        "dateJoined": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "On Leave", "Terminated", "Contract"] },
+        "performanceScore": { "type": "number" },
+        "bio": { "type": "string", "maxLength": 500 },
+        "profilePicture": { "type": "string" }
+      },
+      "required": ["id", "name", "role", "status"]
+    },
+    "LeaveRequest": {
+      "title": "Leave Request",
+      "description": "Staff leave application record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "leaveType": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "reason": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] }
+      },
+      "required": ["id", "employeeId", "leaveType", "startDate", "reason", "status"]
+    }
+  },
+  "firestore": {
+    "/clients/{clientId}": {
+      "schema": { "$ref": "#/entities/Client" },
+      "description": "Collection of wedding studio clients."
+    },
+    "/assignments/{assignmentId}": {
+      "schema": { "$ref": "#/entities/Assignment" },
+      "description": "Collection of work assignments."
+    },
+    "/employees/{employeeId}": {
+      "schema": { "$ref": "#/entities/Employee" },
+      "description": "Collection of studio staff members."
+    },
+    "/leaveRequests/{leaveRequestId}": {
+      "schema": { "$ref": "#/entities/LeaveRequest" },
+      "description": "Collection of leave applications."
+    },
+    "/settings/{settingId}": {
+      "schema": { "type": "object" },
+      "description": "System settings such as leave policy configuration."
+    }
+  }
+}
