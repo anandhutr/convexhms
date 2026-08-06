@@ -461,45 +461,48 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
                 {myClientEvents.map(client => (
-                  <div key={client.id} className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:shadow-md transition-all space-y-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-extrabold text-slate-900 text-base">{client.name}</h4>
-                        <p className="text-xs text-slate-500">{client.email} • {client.phone}</p>
-                      </div>
-                      <span className="px-2.5 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold">
-                        {client.religion}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
-                      {client.events.map(ev => (
-                        <div key={ev.id} className="bg-white p-2.5 rounded-xl border border-slate-200/80 text-xs flex justify-between items-center">
-                          <div>
-                            <span className="font-bold text-slate-800">{ev.type}</span>
-                            <span className="text-slate-400 ml-2">@ {ev.venue}</span>
-                          </div>
-                          <span className="font-semibold text-indigo-600 text-[11px]">{ev.date}</span>
+                  <div key={client.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:shadow-md transition-all flex flex-col justify-between space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start gap-1">
+                        <div className="min-w-0">
+                          <h4 className="font-extrabold text-slate-900 text-sm truncate">{client.name}</h4>
+                          <p className="text-[10px] text-slate-500 truncate">{client.phone || client.email}</p>
                         </div>
-                      ))}
+                        <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-extrabold shrink-0">
+                          {client.religion}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 pt-1.5 border-t border-slate-200/60">
+                        {client.events.map(ev => (
+                          <div key={ev.id} className="bg-white p-2 rounded-xl border border-slate-200/80 text-[11px] flex justify-between items-center">
+                            <span className="font-extrabold text-slate-800 truncate">{ev.type}</span>
+                            <span className="font-bold text-indigo-600 text-[10px] shrink-0 ml-1">{ev.date}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-2">
+                    <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200/60">
                       <button
+                        type="button"
                         onClick={() => onSelectClient && onSelectClient(client.id)}
-                        className="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-1.5"
+                        className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[11px] rounded-xl transition-colors flex items-center justify-center gap-1 shadow-2xs"
                       >
-                        <Contact2 size={14} /> Open Client CRM
+                        <Contact2 size={13} />
+                        <span>CRM</span>
                       </button>
 
                       {onGenerateBrief && (
                         <button
+                          type="button"
                           onClick={() => onGenerateBrief(client)}
-                          className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold text-xs rounded-xl hover:bg-indigo-100 transition-colors flex items-center gap-1.5"
+                          className="py-1.5 px-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-[11px] rounded-xl transition-colors flex items-center justify-center gap-1 shrink-0"
+                          title="AI Creative Brief"
                         >
-                          <Sparkles size={14} /> AI Creative Brief
+                          <Sparkles size={13} />
                         </button>
                       )}
                     </div>
