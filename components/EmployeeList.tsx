@@ -96,8 +96,8 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
         </div>
       </div>
 
-      {/* CARDS GRID LAYOUT (4 CARDS PER ROW) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      {/* CARDS GRID LAYOUT */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filtered.map((e) => {
           const isArchivedRow = e.status === 'Terminated' || (e as any).status === 'Archived';
           return (
