@@ -368,12 +368,10 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
       </div>
 
       {/* Main Client Profile Hero */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 lg:p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs p-5 lg:p-6 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 relative z-10">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white flex items-center justify-center font-black text-2xl shadow-md shadow-indigo-500/20 shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 border border-slate-800 dark:border-slate-200 flex items-center justify-center font-black text-2xl shadow-sm shrink-0">
               {client.name.charAt(0)}
             </div>
             <div>
@@ -495,15 +493,15 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
 
         {/* Financial & Payment Compact Dashboard Card - ADMIN ONLY */}
         {isAdmin ? (
-          <div className="mt-5 p-4 bg-gradient-to-r from-slate-900 to-indigo-950 rounded-2xl text-white shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-800/50 pb-3 mb-3">
+          <div className="mt-5 p-4 bg-slate-900 text-white dark:bg-slate-900 dark:border-slate-800 rounded-2xl border border-slate-800 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 mb-3">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-500/20 text-indigo-300 rounded-lg border border-indigo-400/30">
+                <div className="p-1.5 bg-slate-800 text-indigo-300 rounded-lg border border-slate-700">
                   <FileText size={16} />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm text-white">Payment & Commercial Breakdown</h3>
-                  <p className="text-[10px] text-slate-300 font-medium">Package pricing, advance collected, & pending balance</p>
+                  <p className="text-[10px] text-slate-400 font-medium">Package pricing, advance collected, & pending balance</p>
                 </div>
               </div>
 
@@ -638,7 +636,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
           return (
             <div key={ev.id} className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden space-y-0">
               {/* Intuitive Redesigned Function Ceremony Header */}
-              <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col justify-between gap-3">
+              <div className="p-4 bg-slate-900 text-white dark:bg-slate-950 flex flex-col justify-between gap-3 border-b border-slate-800">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
