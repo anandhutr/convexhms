@@ -1,5 +1,5 @@
 
-export type Department = 'Production' | 'Post-Production' | 'Marketing' | 'HR' | 'Finance' | 'Creative' | 'Management';
+export type Department = 'HR' | 'Video Editor' | 'Photo Editor' | 'Creative Designer' | 'Management' | 'Executive Board';
 
 export type EmployeeStatus = 'Active' | 'On Leave' | 'Terminated' | 'Contract';
 

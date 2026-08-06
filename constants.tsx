@@ -7,7 +7,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
     name: 'Arjun Mehta',
     email: 'arjun.m@convexent.com',
     role: 'Lead Cinematographer',
-    department: 'Production',
+    department: 'Video Editor',
     salary: 125000,
     dateJoined: '2022-01-15',
     status: 'Active',
@@ -19,7 +19,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
     name: 'Sarah Khan',
     email: 'sarah.k@convexent.com',
     role: 'Senior Editor',
-    department: 'Post-Production',
+    department: 'Video Editor',
     salary: 95000,
     dateJoined: '2021-06-20',
     status: 'Active',
@@ -31,7 +31,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
     name: 'Vikram Singh',
     email: 'vikram.s@convexent.com',
     role: 'Creative Director',
-    department: 'Creative',
+    department: 'Creative Designer',
     salary: 150000,
     dateJoined: '2020-03-10',
     status: 'Active',
@@ -55,7 +55,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
     name: 'Rajesh Gupte',
     email: 'rajesh.g@convexent.com',
     role: 'CFO',
-    department: 'Finance',
+    department: 'Executive Board',
     salary: 180000,
     dateJoined: '2019-05-15',
     status: 'Active',
@@ -313,5 +313,5 @@ export const MOCK_ASSIGNMENTS: Assignment[] = [
   }
 ];
 
-export const DEPARTMENTS = ['Production', 'Post-Production', 'Marketing', 'HR', 'Finance', 'Creative', 'Management'];
+export const DEPARTMENTS: Department[] = ['HR', 'Video Editor', 'Photo Editor', 'Creative Designer', 'Management', 'Executive Board'];
 
