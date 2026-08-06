@@ -553,11 +553,16 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex relative">
       <Sidebar 
         currentView={state.view} 
-        setView={handleSetView} 
+        onNavigate={handleSetView} 
         currentRoleId={currentRoleId}
         employees={employees}
         onLogout={handleLogout}
         onSwitchProfile={() => setIsLoginModalOpen(true)}
+        onEditMyProfile={() => {
+          if (currentLoggedInEmp) {
+            handleOpenEmployeeModal(currentLoggedInEmp);
+          }
+        }}
       />
       
       <main className="flex-1 ml-64 p-8 overflow-y-auto">
@@ -827,6 +832,7 @@ const App: React.FC = () => {
         onClose={() => setState(prev => ({ ...prev, isModalOpen: false }))} 
         onSubmit={handleSubmitEmployee} 
         initialData={state.selectedEmployee} 
+        isAdmin={isCurrentAdmin}
       />
 
       <AssignmentModal 

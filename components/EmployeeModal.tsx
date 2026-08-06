@@ -9,13 +9,15 @@ interface EmployeeModalProps {
   onClose: () => void;
   onSubmit: (employee: Partial<Employee>) => void;
   initialData?: Employee | null;
+  isAdmin?: boolean;
 }
 
-const EmployeeModal: React.FC<EmployeeModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
+const EmployeeModal: React.FC<EmployeeModalProps> = ({ isOpen, onClose, onSubmit, initialData, isAdmin = true }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Partial<Employee>>({
     name: '',
     email: '',
+    phone: '',
     role: '',
     department: 'HR',
     salary: 50000,
@@ -135,6 +137,21 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ isOpen, onClose, onSubmit
             </div>
 
             <div className="space-y-1">
+              <label className="text-sm font-bold text-slate-700 flex items-center justify-between">
+                <span>Mobile Phone Number</span>
+                <span className="text-red-500 text-xs font-bold">*Mandatory</span>
+              </label>
+              <input 
+                required
+                type="tel"
+                placeholder="+91 98765 43210"
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800"
+                value={formData.phone || ''}
+                onChange={e => setFormData({...formData, phone: e.target.value})}
+              />
+            </div>
+
+            <div className="space-y-1">
               <label className="text-sm font-semibold text-slate-700">Role Title</label>
               <input 
                 required
@@ -155,17 +172,19 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ isOpen, onClose, onSubmit
               </select>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-slate-700">System Access Level</label>
-              <select 
-                className="w-full px-4 py-2 bg-indigo-50/60 border border-indigo-200 rounded-xl font-bold text-indigo-900 text-sm"
-                value={formData.accessLevel || 'employee'}
-                onChange={e => setFormData({...formData, accessLevel: e.target.value as 'admin' | 'employee'})}
-              >
-                <option value="employee">👤 Staff / Employee (Work Tracking & Dashboard)</option>
-                <option value="admin">👑 Admin (Full Access: Clients, Financials & HR)</option>
-              </select>
-            </div>
+            {isAdmin && (
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-slate-700">System Access Level</label>
+                <select 
+                  className="w-full px-4 py-2 bg-indigo-50/60 border border-indigo-200 rounded-xl font-bold text-indigo-900 text-sm"
+                  value={formData.accessLevel || 'employee'}
+                  onChange={e => setFormData({...formData, accessLevel: e.target.value as 'admin' | 'employee'})}
+                >
+                  <option value="employee">👤 Staff / Employee (Work Tracking & Dashboard)</option>
+                  <option value="admin">👑 Admin (Full Access: Clients, Financials & HR)</option>
+                </select>
+              </div>
+            )}
 
             <div className="space-y-1">
               <label className="text-sm font-semibold text-slate-700">
@@ -182,16 +201,18 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ isOpen, onClose, onSubmit
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-slate-700">Salary (Annual $)</label>
-              <input 
-                required
-                type="number"
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl"
-                value={formData.salary}
-                onChange={e => setFormData({...formData, salary: Number(e.target.value)})}
-              />
-            </div>
+            {isAdmin && (
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-slate-700">Salary (Annual ₹)</label>
+                <input 
+                  required
+                  type="number"
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  value={formData.salary}
+                  onChange={e => setFormData({...formData, salary: Number(e.target.value)})}
+                />
+              </div>
+            )}
 
             <div className="space-y-1 md:col-span-2">
               <label className="text-sm font-semibold text-slate-700">Performance Score (1-10)</label>
