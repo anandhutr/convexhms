@@ -21,6 +21,7 @@ import { Plus, Search as SearchIcon, X, Sparkles, RefreshCw, UserCheck, LogOut, 
 import { generateEventCreativeBrief } from './services/geminiService';
 import ExpenseTracker from './components/ExpenseTracker';
 import NotificationCenter from './components/NotificationCenter';
+import DailyCalendarTracker from './components/DailyCalendarTracker';
 import { 
   testFirestoreConnection,
   seedInitialFirestoreData,
@@ -819,6 +820,16 @@ const App: React.FC = () => {
               onSaveLeaveRequest={handleSaveLeaveRequest}
               onDeleteLeaveRequest={handleDeleteLeaveRequest}
               onUpdateLeavePolicy={handleUpdateLeavePolicy}
+            />
+          )}
+
+          {state.view === 'calendar' && (
+            <DailyCalendarTracker 
+              clients={clients}
+              assignments={assignments}
+              employees={employees}
+              onSelectClient={handleSelectClient}
+              onNewTask={handleOpenAssignmentModal}
             />
           )}
 

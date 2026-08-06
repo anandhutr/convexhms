@@ -842,6 +842,118 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
+          {/* ========================================================= */}
+          {/* TODAY'S EVENT SHOOTS & ASSIGNED CREW ROSTER SECTION        */}
+          {/* ========================================================= */}
+          {(() => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayEvents = clients.flatMap(client => 
+              (client.events || []).map(event => ({
+                ...event,
+                client
+              }))
+            ).filter(event => event.date === todayStr);
+
+            const upcomingShoots = clients.flatMap(client => 
+              (client.events || []).map(event => ({
+                ...event,
+                client
+              }))
+            ).sort((a, b) => new Date(a.date || '2099-12-31').getTime() - new Date(b.date || '2099-12-31').getTime()).slice(0, 3);
+
+            const displayEvents = todayEvents.length > 0 ? todayEvents : upcomingShoots;
+
+            return (
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-amber-500/10 text-amber-600 rounded-2xl border border-amber-500/20">
+                      <Camera size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900">
+                        {todayEvents.length > 0 ? "Today's Scheduled Function Shoots & Assigned Crew" : "Upcoming Client Function Shoots & Crew Roster"}
+                      </h3>
+                      <p className="text-[11px] text-slate-400">
+                        {todayEvents.length > 0 
+                          ? `Live shoot schedule and crew roster for today (${new Date().toLocaleDateString()})` 
+                          : 'Next upcoming client function shoots and crew allocations'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-black rounded-full shrink-0">
+                    {todayEvents.length > 0 ? `${todayEvents.length} Shoot(s) Today` : 'Next Upcoming'}
+                  </span>
+                </div>
+
+                {displayEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {displayEvents.map(event => (
+                      <div key={event.id} className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3 hover:border-amber-300 transition-all">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-black rounded-md uppercase tracking-wider">
+                                {event.type} Ceremony
+                              </span>
+                              <span className="text-[11px] text-slate-500 font-extrabold">📅 {event.date || 'TBD'}</span>
+                            </div>
+                            <h4 className="font-extrabold text-slate-900 text-sm mt-1">{event.type} — {event.client.name}</h4>
+                            <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                              <MapPin size={12} className="text-slate-400 shrink-0" />
+                              <span>{event.venue || 'Venue Address TBD'}</span>
+                            </p>
+                          </div>
+
+                          {onSelectClient && (
+                            <button
+                              type="button"
+                              onClick={() => onSelectClient(event.client.id)}
+                              className="px-2.5 py-1 bg-white hover:bg-slate-100 text-indigo-700 border border-slate-200 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 shrink-0 shadow-2xs"
+                            >
+                              <Contact2 size={13} />
+                              <span>CRM</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Assigned Crew Members */}
+                        <div className="pt-2 border-t border-slate-200/80 space-y-2">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Assigned Shoot Crew Roster:</p>
+                          {event.crew && event.crew.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {event.crew.map(crew => (
+                                <div key={crew.id} className="p-2 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between text-xs shadow-2xs">
+                                  <div className="min-w-0">
+                                    <span className="font-extrabold text-slate-900 block truncate">{crew.name}</span>
+                                    <span className="text-[10px] font-bold text-indigo-600 block">{crew.role} ({crew.side} side)</span>
+                                  </div>
+                                  {crew.phone && (
+                                    <a href={`tel:${crew.phone}`} className="text-[10px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded transition-colors flex items-center gap-1 shrink-0">
+                                      <Phone size={10} />
+                                      <span>Call</span>
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 italic">No photographer or videographer crew assigned to this shoot yet.</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
+                    No client function shoots scheduled.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Analytics Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Department Distribution */}
