@@ -587,6 +587,10 @@ const App: React.FC = () => {
               onDismissNotif={(id) => {
                 deleteNotificationFromFirestore(id);
               }}
+              onClearAllNotifs={() => {
+                systemNotifications.forEach(n => deleteNotificationFromFirestore(n.id));
+                setSystemNotifications([]);
+              }}
             />
 
             {state.view !== 'employees' && (

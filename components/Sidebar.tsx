@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'clients', label: 'Clients', icon: Contact2, adminOnly: true },
+    { id: 'clients', label: 'Clients', icon: Contact2 },
     { id: 'assignments', label: 'Work Tracking', icon: ClipboardList },
     { id: 'expenses', label: 'Work Expenses', icon: Receipt, adminOnly: true },
     { id: 'leaves', label: 'Leave Management', icon: Calendar },
