@@ -606,6 +606,98 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
+          {/* ========================================================= */}
+          {/* TOP ROW: TODAY'S SCHEDULED FUNCTION SHOOTS (3 CARDS IN A ROW, MAX 5 VISIBLE / SCROLL IF EXCEEDS 5) */}
+          {/* ========================================================= */}
+          {(() => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayEvents = clients.flatMap(client => 
+              (client.events || []).map(event => ({
+                ...event,
+                client
+              }))
+            ).filter(event => event.date === todayStr);
+
+            const upcomingShoots = clients.flatMap(client => 
+              (client.events || []).map(event => ({
+                ...event,
+                client
+              }))
+            ).sort((a, b) => new Date(a.date || '2099-12-31').getTime() - new Date(b.date || '2099-12-31').getTime());
+
+            const displayShoots = todayEvents.length > 0 ? todayEvents : upcomingShoots.slice(0, 12);
+
+            return (
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-amber-500/10 text-amber-600 rounded-2xl border border-amber-500/20">
+                      <Camera size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900">
+                        {todayEvents.length > 0 ? "Today's Scheduled Function Shoots" : "Upcoming Function Shoots"}
+                      </h3>
+                      <p className="text-[11px] text-slate-400">Client function shoots & assigned crew members (3 cards per row • Scroll if exceeds 5 items)</p>
+                    </div>
+                  </div>
+
+                  <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-black rounded-full shrink-0">
+                    {todayEvents.length > 0 ? `${todayEvents.length} Shoot(s) Today` : `${displayShoots.length} Scheduled`}
+                  </span>
+                </div>
+
+                {displayShoots.length > 0 ? (
+                  <div className="max-h-[420px] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {displayShoots.map(event => (
+                        <div 
+                          key={event.id} 
+                          className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3 hover:border-amber-300 transition-all flex flex-col justify-between"
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-black rounded-md uppercase tracking-wider">
+                                {event.type}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500">📅 {event.date || 'TBD'}</span>
+                            </div>
+
+                            <h4 className="font-extrabold text-slate-900 text-sm truncate flex items-center gap-1.5">
+                              <Contact2 size={14} className="text-indigo-600 shrink-0" />
+                              <span className="truncate">{event.client.name}</span>
+                            </h4>
+                          </div>
+
+                          {/* Assigned Crew Members Names */}
+                          <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
+                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Assigned Crew Members:</p>
+                            {event.crew && event.crew.length > 0 ? (
+                              <div className="space-y-1">
+                                {event.crew.map(c => (
+                                  <div key={c.id} className="flex items-center justify-between text-xs font-bold text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs">
+                                    <span className="truncate">{c.name}</span>
+                                    <span className="text-[10px] font-bold text-indigo-600 shrink-0">{c.role}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-slate-400 italic">No crew assigned yet</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
+                    No client function shoots scheduled.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* TWO-COLUMN COMPACT LAYOUT: UPCOMING EVENTS & DUE WORK */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* COLUMN 1: Upcoming Shoot Functions */}
@@ -844,96 +936,6 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
           </div>
-
-          {/* ========================================================= */}
-          {/* SECOND ROW: TODAY'S SCHEDULED FUNCTION SHOOTS (3 COLUMNS)  */}
-          {/* ========================================================= */}
-          {(() => {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const todayEvents = clients.flatMap(client => 
-              (client.events || []).map(event => ({
-                ...event,
-                client
-              }))
-            ).filter(event => event.date === todayStr);
-
-            const upcomingShoots = clients.flatMap(client => 
-              (client.events || []).map(event => ({
-                ...event,
-                client
-              }))
-            ).sort((a, b) => new Date(a.date || '2099-12-31').getTime() - new Date(b.date || '2099-12-31').getTime()).slice(0, 3);
-
-            const displayShoots = todayEvents.length > 0 ? todayEvents : upcomingShoots;
-
-            return (
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs p-6 space-y-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 bg-amber-500/10 text-amber-600 rounded-2xl border border-amber-500/20">
-                      <Camera size={20} />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-extrabold text-slate-900">
-                        {todayEvents.length > 0 ? "Today's Scheduled Function Shoots" : "Upcoming Function Shoots"}
-                      </h3>
-                      <p className="text-[11px] text-slate-400">Client function shoots & assigned crew members</p>
-                    </div>
-                  </div>
-
-                  <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-black rounded-full shrink-0">
-                    {todayEvents.length > 0 ? `${todayEvents.length} Shoot(s) Today` : 'Next Upcoming'}
-                  </span>
-                </div>
-
-                {displayShoots.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {displayShoots.map(event => (
-                      <div 
-                        key={event.id} 
-                        className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3 hover:border-amber-300 transition-all flex flex-col justify-between"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-black rounded-md uppercase tracking-wider">
-                              {event.type}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-500">📅 {event.date || 'TBD'}</span>
-                          </div>
-
-                          <h4 className="font-extrabold text-slate-900 text-sm truncate flex items-center gap-1.5">
-                            <Contact2 size={14} className="text-indigo-600 shrink-0" />
-                            <span className="truncate">{event.client.name}</span>
-                          </h4>
-                        </div>
-
-                        {/* Assigned Crew Members Names */}
-                        <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
-                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Assigned Crew Members:</p>
-                          {event.crew && event.crew.length > 0 ? (
-                            <div className="space-y-1">
-                              {event.crew.map(c => (
-                                <div key={c.id} className="flex items-center justify-between text-xs font-bold text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs">
-                                  <span className="truncate">{c.name}</span>
-                                  <span className="text-[10px] font-bold text-indigo-600 shrink-0">{c.role}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-xs text-slate-400 italic">No crew assigned yet</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
-                    No client function shoots scheduled.
-                  </div>
-                )}
-              </div>
-            );
-          })()}
 
           {/* Analytics Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
