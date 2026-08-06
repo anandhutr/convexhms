@@ -603,8 +603,8 @@ const Assignments: React.FC<AssignmentsProps> = ({
 
                               <TaskProgressBar task={task} onToggleSubtask={onToggleSubtask} />
 
-                              {/* Work Expenses Section for this Task */}
-                              {(() => {
+                              {/* Work Expenses Section for this Task (Admin Only) */}
+                              {isAdmin && (() => {
                                 const taskExpenses = expenses.filter(e => e.assignmentId === task.id);
                                 const totalTaskExp = taskExpenses.reduce((sum, e) => sum + e.amount, 0);
                                 return (

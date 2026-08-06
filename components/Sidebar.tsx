@@ -26,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'clients', label: 'Clients', icon: Contact2, adminOnly: true },
     { id: 'assignments', label: 'Work Tracking', icon: ClipboardList },
-    { id: 'expenses', label: 'Work Expenses', icon: Receipt },
+    { id: 'expenses', label: 'Work Expenses', icon: Receipt, adminOnly: true },
     { id: 'leaves', label: 'Leave Management', icon: Calendar },
     { id: 'directory', label: 'Employee Management', icon: Users, adminOnly: true },
     { id: 'ai-insights', label: 'AI Strategy Hub', icon: BrainCircuit },

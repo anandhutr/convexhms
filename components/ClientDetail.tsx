@@ -524,66 +524,83 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               </div>
             </div>
 
-            {(() => {
-              const clientExpenses = expenses.filter(e => e.clientId === client.id || assignments.some(a => a.clientId === client.id && a.id === e.assignmentId));
-              const totalExpenses = clientExpenses.reduce((sum, e) => sum + e.amount, 0);
-              const netProfit = packageAmt - totalExpenses;
-              const margin = packageAmt > 0 ? Math.round((netProfit / packageAmt) * 100) : 0;
+            {isAdmin ? (
+              (() => {
+                const clientExpenses = expenses.filter(e => e.clientId === client.id || assignments.some(a => a.clientId === client.id && a.id === e.assignmentId));
+                const totalExpenses = clientExpenses.reduce((sum, e) => sum + e.amount, 0);
+                const netProfit = packageAmt - totalExpenses;
+                const margin = packageAmt > 0 ? Math.round((netProfit / packageAmt) * 100) : 0;
 
-              return (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
-                      <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Total Package Revenue</span>
-                      <p className="text-base font-black text-white mt-0.5">₹{packageAmt.toLocaleString()}</p>
-                    </div>
-
-                    <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                      <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Advance Collected</span>
-                      <p className="text-base font-black text-emerald-400 mt-0.5">₹{advancePaid.toLocaleString()}</p>
-                    </div>
-
-                    <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                      <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Work Expenses</span>
-                      <p className="text-base font-black text-amber-400 mt-0.5">₹{totalExpenses.toLocaleString()}</p>
-                      <span className="text-[9px] text-amber-200/80 font-medium block">{clientExpenses.length} expense log(s)</span>
-                    </div>
-
-                    <div className="p-2.5 bg-indigo-500/10 border border-indigo-400/20 rounded-xl">
-                      <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Work Net Profit</span>
-                      <p className="text-base font-black text-indigo-200 mt-0.5">₹{netProfit.toLocaleString()}</p>
-                      <span className="text-[9px] text-indigo-300/80 font-bold block">{margin}% Net Margin</span>
-                    </div>
-
-                    <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl col-span-2 md:col-span-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Work Tasks</span>
-                        <span className="text-[10px] font-extrabold text-emerald-400">{completionPercent}% Done</span>
+                return (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                      <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
+                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Total Package Revenue</span>
+                        <p className="text-base font-black text-white mt-0.5">₹{packageAmt.toLocaleString()}</p>
                       </div>
-                      <p className="text-base font-black text-white mt-0.5">{doneCount}/{totalCount} Tasks</p>
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white/5 p-2.5 rounded-xl border border-white/10 text-xs">
-                    <div className="flex items-center gap-2">
-                      <Receipt size={15} className="text-amber-400 shrink-0" />
-                      <span className="text-slate-300">
-                        Net Profit Formula: Revenue (₹{packageAmt.toLocaleString()}) - Work Expenses (₹{totalExpenses.toLocaleString()}) = <strong className="text-white">₹{netProfit.toLocaleString()}</strong>
-                      </span>
+                      <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                        <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Advance Collected</span>
+                        <p className="text-base font-black text-emerald-400 mt-0.5">₹{advancePaid.toLocaleString()}</p>
+                      </div>
+
+                      <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                        <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Work Expenses</span>
+                        <p className="text-base font-black text-amber-400 mt-0.5">₹{totalExpenses.toLocaleString()}</p>
+                        <span className="text-[9px] text-amber-200/80 font-medium block">{clientExpenses.length} expense log(s)</span>
+                      </div>
+
+                      <div className="p-2.5 bg-indigo-500/10 border border-indigo-400/20 rounded-xl">
+                        <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Work Net Profit</span>
+                        <p className="text-base font-black text-indigo-200 mt-0.5">₹{netProfit.toLocaleString()}</p>
+                        <span className="text-[9px] text-indigo-300/80 font-bold block">{margin}% Net Margin</span>
+                      </div>
+
+                      <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl col-span-2 md:col-span-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Work Tasks</span>
+                          <span className="text-[10px] font-extrabold text-emerald-400">{completionPercent}% Done</span>
+                        </div>
+                        <p className="text-base font-black text-white mt-0.5">{doneCount}/{totalCount} Tasks</p>
+                      </div>
                     </div>
-                    {onViewExpenses && (
-                      <button
-                        type="button"
-                        onClick={onViewExpenses}
-                        className="text-indigo-300 hover:text-white font-bold text-xs underline shrink-0"
-                      >
-                        Manage Client Expenses →
-                      </button>
-                    )}
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white/5 p-2.5 rounded-xl border border-white/10 text-xs">
+                      <div className="flex items-center gap-2">
+                        <Receipt size={15} className="text-amber-400 shrink-0" />
+                        <span className="text-slate-300">
+                          Net Profit Formula: Revenue (₹{packageAmt.toLocaleString()}) - Work Expenses (₹{totalExpenses.toLocaleString()}) = <strong className="text-white">₹{netProfit.toLocaleString()}</strong>
+                        </span>
+                      </div>
+                      {onViewExpenses && (
+                        <button
+                          type="button"
+                          onClick={onViewExpenses}
+                          className="text-indigo-300 hover:text-white font-bold text-xs underline shrink-0"
+                        >
+                          Manage Client Expenses →
+                        </button>
+                      )}
+                    </div>
                   </div>
+                );
+              })()
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Project Status</span>
+                  <p className="text-base font-black text-white mt-0.5">{client.status || 'Active'}</p>
                 </div>
-              );
-            })()}
+
+                <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Work Progress</span>
+                    <span className="text-[10px] font-extrabold text-emerald-400">{completionPercent}% Done</span>
+                  </div>
+                  <p className="text-base font-black text-white mt-0.5">{doneCount}/{totalCount} Tasks Completed</p>
+                </div>
+              </div>
+            )}
 
             {client.paymentNotes && (
               <div className="mt-3 text-[11px] text-slate-300 italic bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 flex items-center gap-2">

@@ -690,7 +690,7 @@ const App: React.FC = () => {
               onUpdateStatus={handleUpdateAssignmentStatus}
               onToggleSubtask={handleToggleSubtask}
               onDelete={requestDeleteAssignment}
-              onViewExpenses={() => handleNavigate('expenses')}
+              onViewExpenses={isCurrentAdmin ? () => handleNavigate('expenses') : undefined}
               onNewTask={(clientId) => {
                 if (clientId) {
                   const clientObj = clients.find(c => c.id === clientId);
@@ -730,7 +730,7 @@ const App: React.FC = () => {
                 onDeleteAssignment={requestDeleteAssignment}
                 onEditAssignment={handleOpenAssignmentModal}
                 onDeleteClient={requestDeleteClient}
-                onViewExpenses={() => handleNavigate('expenses')}
+                onViewExpenses={isCurrentAdmin ? () => handleNavigate('expenses') : undefined}
               />
             ) : (
               <ClientManagement 
@@ -746,34 +746,44 @@ const App: React.FC = () => {
           )}
 
           {state.view === 'expenses' && (
-            <ExpenseTracker 
-              expenses={expenses}
-              assignments={assignments}
-              clients={clients}
-              employees={employees}
-              currentRoleId={currentRoleId}
-              onSaveExpense={(exp) => {
-                saveExpenseToFirestore(exp);
-                saveNotificationToFirestore({
-                  id: Math.random().toString(36).substr(2, 9),
-                  type: 'expense_added',
-                  title: 'New Work Expense Logged',
-                  message: `${currentLoggedInEmp?.name || 'Staff'} logged an expense of ₹${exp.amount.toLocaleString()} for "${exp.title}".`,
-                  targetId: exp.id,
-                  targetType: 'expense',
-                  requestedBy: {
-                    id: currentLoggedInEmp?.id || 'emp',
-                    name: currentLoggedInEmp?.name || 'Staff',
-                    role: currentLoggedInEmp?.role || 'Staff'
-                  },
-                  createdAt: new Date().toISOString(),
-                  status: 'pending'
-                });
-              }}
-              onDeleteExpense={(id) => {
-                deleteExpenseFromFirestore(id);
-              }}
-            />
+            isCurrentAdmin ? (
+              <ExpenseTracker 
+                expenses={expenses}
+                assignments={assignments}
+                clients={clients}
+                employees={employees}
+                currentRoleId={currentRoleId}
+                onSaveExpense={(exp) => {
+                  saveExpenseToFirestore(exp);
+                  saveNotificationToFirestore({
+                    id: Math.random().toString(36).substr(2, 9),
+                    type: 'expense_added',
+                    title: 'New Work Expense Logged',
+                    message: `${currentLoggedInEmp?.name || 'Staff'} logged an expense of ₹${exp.amount.toLocaleString()} for "${exp.title}".`,
+                    targetId: exp.id,
+                    targetType: 'expense',
+                    requestedBy: {
+                      id: currentLoggedInEmp?.id || 'emp',
+                      name: currentLoggedInEmp?.name || 'Staff',
+                      role: currentLoggedInEmp?.role || 'Staff'
+                    },
+                    createdAt: new Date().toISOString(),
+                    status: 'pending'
+                  });
+                }}
+                onDeleteExpense={(id) => {
+                  deleteExpenseFromFirestore(id);
+                }}
+              />
+            ) : (
+              <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm max-w-xl mx-auto my-12">
+                <div className="w-16 h-16 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-center text-amber-600 mx-auto mb-4">
+                  <Receipt size={32} />
+                </div>
+                <h2 className="text-xl font-extrabold text-slate-800">Access Restricted</h2>
+                <p className="text-sm text-slate-500 mt-2 font-medium">Work Expenses management is confidential and restricted to System Admins only.</p>
+              </div>
+            )
           )}
 
           {state.view === 'leaves' && (
