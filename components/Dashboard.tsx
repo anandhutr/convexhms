@@ -851,62 +851,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                 )}
               </div>
             </div>
-          {/* Analytics Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Department Distribution */}
-            <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-              <h3 className="font-semibold text-slate-800 mb-6">Department Talent Distribution</h3>
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={deptData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={95}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {deptData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {deptData.map((d, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                    <span className="text-slate-600 truncate">{d.name} ({d.value})</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Performance & Comp Efficiency */}
-            <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-              <h3 className="font-semibold text-slate-800 mb-6">Performance & Comp Efficiency</h3>
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={employees}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" fontSize={10} tick={{ fill: '#64748b' }} />
-                    <YAxis yAxisId="left" orientation="left" stroke="#6366f1" fontSize={10} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#ec4899" fontSize={10} />
-                    <Tooltip />
-                    <Bar yAxisId="left" dataKey="salary" fill="#6366f1" radius={[4, 4, 0, 0]} name="Salary" />
-                    <Bar yAxisId="right" dataKey="performanceScore" fill="#ec4899" radius={[4, 4, 0, 0]} name="Score" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
   );
 };
