@@ -1,12 +1,12 @@
 {
-  "projectId": "winged-plateau-47854",
-  "appId": "1:362927977609:web:1d962b7b453662d21c0258",
-  "apiKey": "AIzaSyDU-GKP1ya3fL3OXz6Nsj14S2ZMNvHMtoI",
-  "authDomain": "winged-plateau-47854.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-convexhremployee-9ac2d887-118c-46c5-8507-9c536fb43aa4",
-  "storageBucket": "winged-plateau-47854.firebasestorage.app",
-  "messagingSenderId": "362927977609",
-  "measurementId": "",
-  "oAuthClientId": "362927977609-p83jmjmaeecv399pqrooo78spqtpk0um.apps.googleusercontent.com",
+  "projectId": "convex-hrms",
+  "appId": "1:479975440429:web:95096cfc93b9a1f218b8a4",
+  "apiKey": "AIzaSyBRcSqP_cFMK9uCow4IUVkzVzXIQXTk_lM",
+  "authDomain": "convex-hrms.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "convex-hrms.firebasestorage.app",
+  "messagingSenderId": "479975440429",
+  "measurementId": "G-K98SMN3BBK",
+  "oAuthClientId": "",
   "recaptchaSiteKey": ""
 }

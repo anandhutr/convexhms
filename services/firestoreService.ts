@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 import { 
   getFirestore, 
   collection, 
@@ -13,9 +13,32 @@ import {
 import firebaseConfig from '../firebase-applet-config.json';
 import { Client, Assignment, Employee, LeaveRequest, LeavePolicyConfig } from '../types';
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
+const effectiveConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || (firebaseConfig as any).apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || (firebaseConfig as any).authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || (firebaseConfig as any).projectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || (firebaseConfig as any).storageBucket,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || (firebaseConfig as any).messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || (firebaseConfig as any).appId,
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || (firebaseConfig as any).firestoreDatabaseId
+};
+
+const app = getApps().length > 0 ? getApp() : initializeApp(effectiveConfig);
+export const db = (effectiveConfig.firestoreDatabaseId && effectiveConfig.firestoreDatabaseId !== '(default)')
+  ? getFirestore(app, effectiveConfig.firestoreDatabaseId)
+  : getFirestore(app);
 export const auth = getAuth(app);
+
+// Attempt anonymous authentication if no user is signed in
+try {
+  if (!auth.currentUser) {
+    signInAnonymously(auth).catch(() => {
+      // Anonymous auth disabled or not needed
+    });
+  }
+} catch {
+  // Ignored
+}
 
 export enum OperationType {
   CREATE = 'create',
@@ -61,7 +84,6 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
 }
 
 // Test Connection on startup as mandated
