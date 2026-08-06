@@ -624,11 +624,12 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
             <span>Function Management & Crew/HDD Allocation</span>
           </h2>
           <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
-            {client.events.length} Scheduled Function{client.events.length !== 1 ? 's' : ''}
+            {eventsList.length} Scheduled Function{eventsList.length !== 1 ? 's' : ''}
           </span>
         </div>
 
-        {client.events.map((ev: ClientEvent) => {
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {eventsList.map((ev: ClientEvent) => {
           const eventTasks = clientAssignments.filter(a => a.eventId === ev.id);
           const totalCrewCount = ev.crew?.length || 0;
           const totalHddCount = ev.hddStorage?.length || 0;
@@ -919,6 +920,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* ========================================================= */}
