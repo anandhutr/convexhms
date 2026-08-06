@@ -2,10 +2,14 @@
 import { GoogleGenAI } from "@google/genai";
 import { Employee, Assignment, Client } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAiClient = () => {
+  const apiKey = (typeof process !== 'undefined' && (process.env?.API_KEY || process.env?.GEMINI_API_KEY)) || '';
+  return new GoogleGenAI({ apiKey: apiKey || 'placeholder' });
+};
 
 export async function generateEmployeeReview(employee: Employee) {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Generate a professional performance summary and future growth plan for the following employee:
@@ -32,6 +36,7 @@ export async function generateEmployeeReview(employee: Employee) {
 
 export async function generateTeamInsights(employees: Employee[]) {
   try {
+    const ai = getAiClient();
     const teamSummary = employees.map(e => `${e.name} (${e.role}, Score: ${e.performanceScore})`).join(', ');
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -53,6 +58,7 @@ export async function generateTeamInsights(employees: Employee[]) {
 
 export async function suggestAssignee(taskTitle: string, taskDescription: string, employees: Employee[]) {
   try {
+    const ai = getAiClient();
     const context = employees.map(e => `ID: ${e.id}, Name: ${e.name}, Role: ${e.role}, Bio: ${e.bio}`).join('\n');
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -80,6 +86,7 @@ export async function suggestAssignee(taskTitle: string, taskDescription: string
 
 export async function generateEventCreativeBrief(client: Client) {
   try {
+    const ai = getAiClient();
     const events = client.events.map(ev => `${ev.type} on ${ev.date} at ${ev.venue}`).join(', ');
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
