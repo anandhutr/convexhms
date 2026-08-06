@@ -607,55 +607,54 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {/* ========================================================= */}
-          {/* TOP ROW: TODAY'S SCHEDULED FUNCTION SHOOTS (3 CARDS IN A ROW, MAX 5 VISIBLE / SCROLL IF EXCEEDS 5) */}
+          {/* SINGLE ROW WITH 3 GRIDS: TODAY'S SCHEDULED, UPCOMING SHOOTS & DUE WORK TRACKER */}
           {/* ========================================================= */}
-          {(() => {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const todayEvents = clients.flatMap(client => 
-              (client.events || []).map(event => ({
-                ...event,
-                client
-              }))
-            ).filter(event => event.date === todayStr);
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* GRID 1: Today's Scheduled Function Shoots */}
+            {(() => {
+              const todayStr = new Date().toISOString().split('T')[0];
+              const todayEvents = clients.flatMap(client => 
+                (client.events || []).map(event => ({
+                  ...event,
+                  client
+                }))
+              ).filter(event => event.date === todayStr);
 
-            const upcomingShoots = clients.flatMap(client => 
-              (client.events || []).map(event => ({
-                ...event,
-                client
-              }))
-            ).sort((a, b) => new Date(a.date || '2099-12-31').getTime() - new Date(b.date || '2099-12-31').getTime());
+              const upcomingShoots = clients.flatMap(client => 
+                (client.events || []).map(event => ({
+                  ...event,
+                  client
+                }))
+              ).sort((a, b) => new Date(a.date || '2099-12-31').getTime() - new Date(b.date || '2099-12-31').getTime());
 
-            const displayShoots = todayEvents.length > 0 ? todayEvents : upcomingShoots.slice(0, 12);
+              const displayShoots = todayEvents.length > 0 ? todayEvents : upcomingShoots.slice(0, 12);
 
-            return (
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs p-6 space-y-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 bg-amber-500/10 text-amber-600 rounded-2xl border border-amber-500/20">
-                      <Camera size={20} />
+              return (
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <Camera className="text-amber-600 shrink-0" size={20} />
+                        <div>
+                          <h3 className="text-base font-extrabold text-slate-900">
+                            {todayEvents.length > 0 ? "Today's Scheduled Shoots" : "Upcoming Shoots"}
+                          </h3>
+                          <p className="text-[11px] text-slate-400">Function shoots & crew roster</p>
+                        </div>
+                      </div>
+
+                      <span className="px-2.5 py-1 bg-amber-100 text-amber-800 font-extrabold text-[11px] rounded-lg border border-amber-200 shrink-0">
+                        {todayEvents.length > 0 ? `${todayEvents.length} Today` : `${displayShoots.length} Scheduled`}
+                      </span>
                     </div>
-                    <div>
-                      <h3 className="text-base font-extrabold text-slate-900">
-                        {todayEvents.length > 0 ? "Today's Scheduled Function Shoots" : "Upcoming Function Shoots"}
-                      </h3>
-                      <p className="text-[11px] text-slate-400">Client function shoots & assigned crew members (3 cards per row • Scroll if exceeds 5 items)</p>
-                    </div>
-                  </div>
 
-                  <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-black rounded-full shrink-0">
-                    {todayEvents.length > 0 ? `${todayEvents.length} Shoot(s) Today` : `${displayShoots.length} Scheduled`}
-                  </span>
-                </div>
-
-                {displayShoots.length > 0 ? (
-                  <div className="max-h-[420px] overflow-y-auto pr-1">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {displayShoots.map(event => (
-                        <div 
-                          key={event.id} 
-                          className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3 hover:border-amber-300 transition-all flex flex-col justify-between"
-                        >
-                          <div className="space-y-2">
+                    {displayShoots.length > 0 ? (
+                      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                        {displayShoots.map(event => (
+                          <div 
+                            key={event.id} 
+                            className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2.5 hover:border-amber-300 transition-all"
+                          >
                             <div className="flex items-center justify-between gap-2">
                               <span className="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-black rounded-md uppercase tracking-wider">
                                 {event.type}
@@ -663,84 +662,69 @@ const Dashboard: React.FC<DashboardProps> = ({
                               <span className="text-[10px] font-bold text-slate-500">📅 {event.date || 'TBD'}</span>
                             </div>
 
-                            <h4 className="font-extrabold text-slate-900 text-sm truncate flex items-center gap-1.5">
+                            <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate flex items-center gap-1.5">
                               <Contact2 size={14} className="text-indigo-600 shrink-0" />
                               <span className="truncate">{event.client.name}</span>
                             </h4>
-                          </div>
 
-                          {/* Assigned Crew Members Names */}
-                          <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Assigned Crew Members:</p>
-                            {event.crew && event.crew.length > 0 ? (
-                              <div className="space-y-1">
-                                {event.crew.map(c => (
-                                  <div key={c.id} className="flex items-center justify-between text-xs font-bold text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs">
-                                    <span className="truncate">{c.name}</span>
-                                    <span className="text-[10px] font-bold text-indigo-600 shrink-0">{c.role}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-slate-400 italic">No crew assigned yet</p>
-                            )}
+                            {/* Assigned Crew Members Names */}
+                            <div className="pt-2 border-t border-slate-200/80 space-y-1">
+                              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Assigned Crew Members:</p>
+                              {event.crew && event.crew.length > 0 ? (
+                                <div className="space-y-1">
+                                  {event.crew.map(c => (
+                                    <div key={c.id} className="flex items-center justify-between text-[11px] font-bold text-slate-800 bg-white px-2 py-1 rounded-lg border border-slate-200/60 shadow-2xs">
+                                      <span className="truncate">{c.name}</span>
+                                      <span className="text-[10px] font-bold text-indigo-600 shrink-0">{c.role}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-[11px] text-slate-400 italic">No crew assigned yet</p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-12 text-center bg-slate-50/80 rounded-2xl border border-dashed border-slate-200 space-y-2">
+                        <Camera size={32} className="mx-auto text-slate-300" />
+                        <p className="font-bold text-slate-700 text-xs">No function shoots scheduled</p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
-                    No client function shoots scheduled.
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+                </div>
+              );
+            })()}
 
-          {/* TWO-COLUMN COMPACT LAYOUT: UPCOMING EVENTS & DUE WORK */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* COLUMN 1: Upcoming Shoot Functions */}
+            {/* GRID 2: Upcoming Shoot Functions */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
                     <Calendar className="text-indigo-600 shrink-0" size={20} />
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900">Upcoming Shoot Functions (Next 5 Days)</h3>
-                      <p className="text-[11px] text-slate-400">Scheduled client wedding & function shoots in the next 5 days</p>
+                      <h3 className="text-base font-extrabold text-slate-900">Upcoming Shoot Functions</h3>
+                      <p className="text-[11px] text-slate-400">Next 5 days ceremonies & venues</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-extrabold text-[11px] rounded-lg border border-indigo-100">
-                      {upcomingEvents.length} Function(s)
-                    </span>
-                    {onNewClient && (
-                      <button
-                        onClick={onNewClient}
-                        className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-1"
-                      >
-                        <Plus size={12} /> Add Function
-                      </button>
-                    )}
-                  </div>
+                  <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-extrabold text-[11px] rounded-lg border border-indigo-100 shrink-0">
+                    {upcomingEvents.length} Function(s)
+                  </span>
                 </div>
 
                 {upcomingEvents.length === 0 ? (
                   <div className="py-12 text-center bg-slate-50/80 rounded-2xl border border-dashed border-slate-200 space-y-2">
                     <Calendar size={32} className="mx-auto text-slate-300" />
                     <p className="font-bold text-slate-700 text-xs">No upcoming functions scheduled</p>
-                    <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
-                      Functions added in Client CRM will appear here automatically with venue & date info.
-                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                     {upcomingEvents.map(({ event, client, isToday, daysUntil }) => (
                       <div 
                         key={`${client.id}-${event.id}`}
-                        className={`p-4 rounded-2xl border transition-all space-y-2.5 ${
+                        className={`p-3.5 rounded-2xl border transition-all space-y-2 ${
                           isToday
                             ? 'border-indigo-400 bg-indigo-50/50 shadow-sm ring-1 ring-indigo-500/20'
                             : daysUntil <= 7
@@ -764,44 +748,23 @@ const Dashboard: React.FC<DashboardProps> = ({
                           </span>
                         </div>
 
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h4 className="font-black text-slate-900 text-sm flex items-center gap-1.5">
-                              <Contact2 size={14} className="text-indigo-600 shrink-0" />
-                              {client.name}
-                            </h4>
-                            <p className="text-[11px] text-slate-500 pl-5">{client.religion} • {client.phone}</p>
-                          </div>
+                        <div>
+                          <h4 className="font-black text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+                            <Contact2 size={14} className="text-indigo-600 shrink-0" />
+                            {client.name}
+                          </h4>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-200/60">
-                          <div className="flex items-center gap-1 text-slate-700 font-semibold">
+                          <div className="flex items-center gap-1 text-slate-700 font-semibold truncate">
                             <Calendar size={13} className="text-indigo-500 shrink-0" />
-                            <span className="truncate">{event.date} {event.time ? `@ ${event.time}` : ''}</span>
+                            <span className="truncate">{event.date}</span>
                           </div>
 
-                          <div className="flex items-center gap-1 text-slate-600">
+                          <div className="flex items-center gap-1 text-slate-600 truncate">
                             <MapPin size={13} className="text-rose-500 shrink-0" />
                             <span className="truncate">{event.venue || 'Venue TBD'}</span>
                           </div>
-                        </div>
-
-                        <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
-                          <button
-                            onClick={() => onSelectClient && onSelectClient(client.id)}
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
-                          >
-                            Open CRM <ExternalLink size={10} />
-                          </button>
-
-                          {onGenerateBrief && (
-                            <button
-                              onClick={() => onGenerateBrief(client)}
-                              className="px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold text-[10px] rounded-md hover:bg-indigo-100 transition-colors flex items-center gap-1"
-                            >
-                              <Sparkles size={10} /> AI Brief
-                            </button>
-                          )}
                         </div>
                       </div>
                     ))}
@@ -810,49 +773,31 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
 
-            {/* COLUMN 2: Due & Overdue Work Tracker */}
+            {/* GRID 3: Due Work Tracker */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
                     <Clock className="text-indigo-600 shrink-0" size={20} />
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900">Due Work Tracker (Next 5 Days)</h3>
-                      <p className="text-[11px] text-slate-400">Work overdue or due within the next 5 days</p>
+                      <h3 className="text-base font-extrabold text-slate-900">Due Work Tracker</h3>
+                      <p className="text-[11px] text-slate-400">Work overdue or due soon</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <div className="p-0.5 bg-slate-100 rounded-lg flex items-center gap-0.5 text-[11px] font-bold">
-                      <button
-                        onClick={() => setDueTab('all')}
-                        className={`px-2 py-1 rounded-md transition-all ${dueTab === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                      >
-                        All ({dueItems.length})
-                      </button>
-                      <button
-                        onClick={() => setDueTab('overdue')}
-                        className={`px-2 py-1 rounded-md transition-all ${dueTab === 'overdue' ? 'bg-red-500 text-white' : 'text-slate-600 hover:text-red-600'}`}
-                      >
-                        Overdue ({overdueCount})
-                      </button>
-                      <button
-                        onClick={() => setDueTab('today')}
-                        className={`px-2 py-1 rounded-md transition-all ${dueTab === 'today' ? 'bg-amber-500 text-white' : 'text-slate-600 hover:text-amber-600'}`}
-                      >
-                        Today ({dueTodayCount})
-                      </button>
-                    </div>
-
-                    {onNavigateToTasks && (
-                      <button
-                        onClick={onNavigateToTasks}
-                        className="p-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold text-[11px] rounded-lg transition-colors flex items-center gap-1"
-                        title="View All Tasks"
-                      >
-                        <ArrowRight size={13} />
-                      </button>
-                    )}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setDueTab('all')}
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${dueTab === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+                    >
+                      All ({dueItems.length})
+                    </button>
+                    <button
+                      onClick={() => setDueTab('overdue')}
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${dueTab === 'overdue' ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-600'}`}
+                    >
+                      Overdue ({overdueCount})
+                    </button>
                   </div>
                 </div>
 
@@ -860,74 +805,45 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div className="py-12 text-center bg-slate-50/80 rounded-2xl border border-dashed border-slate-200 space-y-2">
                     <CheckCircle2 size={32} className="mx-auto text-emerald-500" />
                     <p className="font-bold text-slate-800 text-xs">No pending work items</p>
-                    <p className="text-[11px] text-slate-400">All assigned tasks in this view are completed!</p>
                   </div>
                 ) : (
                   <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
                     {filteredDueItems.map(({ task, isOverdue, isDueToday, daysDiff, client, assignee }) => (
                       <div 
                         key={task.id}
-                        className={`p-3.5 rounded-2xl border shadow-2xs transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                        className={`p-3 rounded-2xl border transition-all space-y-1.5 ${
                           isOverdue 
                             ? 'border-red-200 bg-red-50/40' 
                             : isDueToday 
                             ? 'border-amber-200 bg-amber-50/40' 
-                            : 'border-slate-200/80 bg-white hover:border-indigo-200 shadow-2xs'
+                            : 'border-slate-200/80 bg-white hover:border-indigo-200'
                         }`}
                       >
-                        {/* Work Title & Client Tag */}
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                              isOverdue 
-                                ? 'bg-red-500 text-white' 
-                                : isDueToday 
-                                ? 'bg-amber-500 text-white' 
-                                : 'bg-indigo-600 text-white'
-                            }`}>
-                              {isOverdue ? `Overdue (${Math.abs(daysDiff)}d)` : isDueToday ? 'Due Today' : `Due in ${daysDiff}d`}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                            isOverdue 
+                              ? 'bg-red-500 text-white' 
+                              : isDueToday 
+                              ? 'bg-amber-500 text-white' 
+                              : 'bg-indigo-600 text-white'
+                          }`}>
+                            {isOverdue ? `Overdue (${Math.abs(daysDiff)}d)` : isDueToday ? 'Due Today' : `Due in ${daysDiff}d`}
+                          </span>
+
+                          {client && (
+                            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 truncate max-w-[110px]">
+                              👤 {client.name}
                             </span>
-
-                            {client && (
-                              <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 truncate max-w-[130px]">
-                                👤 {client.name}
-                              </span>
-                            )}
-                          </div>
-
-                          <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">
-                            {task.title}
-                          </h4>
+                          )}
                         </div>
 
-                        {/* Pending With Assignee */}
-                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1 text-xs">
-                            <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0 font-bold text-[10px]">
-                              {assignee?.profilePicture ? (
-                                <img src={assignee.profilePicture} className="w-full h-full object-cover" alt={assignee.name} />
-                              ) : (
-                                <span>{assignee?.name.charAt(0) || '?'}</span>
-                              )}
-                            </div>
-                            <div>
-                              <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-tight">Pending With</span>
-                              <span className="text-xs font-black text-slate-800 block truncate max-w-[110px] leading-tight">
-                                {assignee?.name || 'Unassigned'}
-                              </span>
-                            </div>
-                          </div>
+                        <h4 className="font-extrabold text-slate-900 text-xs truncate">
+                          {task.title}
+                        </h4>
 
-                          {onDismissNotification && (
-                            <button
-                              type="button"
-                              onClick={() => onDismissNotification(task.id)}
-                              className="p-1 text-slate-300 hover:text-slate-600 rounded-lg transition-colors"
-                              title="Dismiss notification"
-                            >
-                              <X size={14} />
-                            </button>
-                          )}
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-200/60">
+                          <span className="font-bold text-indigo-600 truncate">Assignee: {assignee ? assignee.name : 'Unassigned'}</span>
+                          <span>📅 {task.dueDate}</span>
                         </div>
                       </div>
                     ))}
@@ -935,8 +851,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                 )}
               </div>
             </div>
-          </div>
-
           {/* Analytics Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Department Distribution */}
@@ -991,7 +905,8 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
     </div>
   );
 };
