@@ -181,25 +181,26 @@ const ClientManagement: React.FC<ClientManagementProps> = ({
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                      <div className="flex items-center justify-end gap-1">
                         <button 
                           onClick={() => onSelectClient(c.id)}
-                          className="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                          className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-2xs"
                         >
-                          View Page
+                          View Portfolio
                         </button>
                         <button 
                           onClick={() => onGenerateBrief(c)}
                           title="Generate AI Brief"
                           className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                         >
-                          <Sparkles size={16} />
+                          <Sparkles size={15} />
                         </button>
                         <button 
                           onClick={() => onEdit(c)}
-                          className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                          title="Edit Profile"
+                          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                         >
-                          <Edit2 size={16} />
+                          <Edit2 size={15} />
                         </button>
                         <button 
                           onClick={(e) => {
@@ -207,10 +208,10 @@ const ClientManagement: React.FC<ClientManagementProps> = ({
                             e.preventDefault();
                             onDelete(c.id);
                           }}
-                          title="Delete Client Profile"
+                          title="Delete Profile"
                           className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </td>

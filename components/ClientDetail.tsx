@@ -435,14 +435,14 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
             </div>
           </div>
 
-          {/* Primary Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          {/* Streamlined Contextual Action Buttons */}
+          <div className="flex items-center gap-2 w-full lg:w-auto">
             {isAdmin && (
               <button
                 onClick={() => onAssignWork(client)}
-                className="flex-1 sm:flex-none items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20 text-xs flex"
+                className="flex-1 sm:flex-none items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm text-xs flex"
               >
-                <Plus size={16} />
+                <Plus size={15} />
                 Assign Work
               </button>
             )}
@@ -450,19 +450,20 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
             <button
               onClick={() => onGenerateBrief(client)}
               className="flex-1 sm:flex-none items-center justify-center gap-1.5 px-3.5 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold rounded-xl hover:bg-indigo-100 transition-all text-xs flex"
+              title="Generate AI Brief"
             >
-              <Sparkles size={16} />
+              <Sparkles size={15} />
               AI Brief
             </button>
 
             {isAdmin && (
-              <>
+              <div className="flex items-center gap-1 shrink-0 pl-1 border-l border-slate-200">
                 <button
                   onClick={() => onEditClient(client)}
-                  className="px-3.5 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5 text-xs"
+                  title="Edit Profile"
+                  className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
                 >
-                  <Edit2 size={15} />
-                  Edit Profile
+                  <Edit2 size={16} />
                 </button>
 
                 {onDeleteClient && (
@@ -480,13 +481,13 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                         }
                       });
                     }}
-                    className="px-3.5 py-2 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-1.5 text-xs"
+                    title="Delete Profile"
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
                   >
-                    <Trash2 size={15} />
-                    Delete Profile
+                    <Trash2 size={16} />
                   </button>
                 )}
-              </>
+              </div>
             )}
 
           </div>
