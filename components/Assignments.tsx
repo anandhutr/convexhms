@@ -545,10 +545,11 @@ const Assignments: React.FC<AssignmentsProps> = ({
 
                               <TaskProgressBar task={task} onToggleSubtask={onToggleSubtask} />
 
-                              {/* Work Expenses Section for this Task (Admin Only) */}
+                              {/* Work Expenses Section for this Task (Admin Only - Render ONLY if expenses exist) */}
                               {isAdmin && (() => {
                                 const taskExpenses = expenses.filter(e => e.assignmentId === task.id);
                                 const totalTaskExp = taskExpenses.reduce((sum, e) => sum + e.amount, 0);
+                                if (taskExpenses.length === 0) return null;
                                 return (
                                   <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
                                     <div className="flex items-center justify-between">
@@ -572,21 +573,22 @@ const Assignments: React.FC<AssignmentsProps> = ({
                                       </div>
                                     </div>
 
-                                    {taskExpenses.length > 0 ? (
-                                      <div className="space-y-1.5">
-                                        {taskExpenses.map(exp => (
-                                          <div key={exp.id} className="p-2 bg-slate-50 rounded-lg border border-slate-200/60 flex items-center justify-between text-xs">
-                                            <div>
-                                              <span className="font-bold text-slate-800">{exp.title}</span>
-                                              <span className="ml-2 text-[10px] text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded font-semibold">{exp.category}</span>
-                                            </div>
-                                            <span className="font-black text-slate-900">₹{exp.amount.toLocaleString()}</span>
+                                    <div className="space-y-1.5">
+                                      {taskExpenses.map(exp => (
+                                        <div key={exp.id} className="p-2 bg-slate-50 rounded-lg border border-slate-200/60 flex items-center justify-between text-xs">
+                                          <div>
+                                            <span className="font-bold text-slate-800">{exp.title}</span>
+                                            <span className="ml-2 text-[10px] text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded font-semibold">{exp.category}</span>
+                                            {exp.paidTo && (
+                                              <span className="ml-1.5 text-[9px] font-bold text-emerald-800 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200">
+                                                👤 Paid To: {exp.paidTo}
+                                              </span>
+                                            )}
                                           </div>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <p className="text-[11px] text-slate-400 italic">No expenses logged for this task yet.</p>
-                                    )}
+                                          <span className="font-black text-slate-900">₹{exp.amount.toLocaleString()}</span>
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
                                 );
                               })()}
